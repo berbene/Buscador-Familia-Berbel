@@ -45,6 +45,13 @@
   a.per:hover,a.per:focus-visible{text-decoration-style:solid}
   .caja .m{color:var(--mut);font-size:.85rem;display:block}
   .caja.priv,.caja.vacio{color:var(--priv);font-style:italic;background:transparent;border-style:dashed}
+  .caja.prot{background:transparent;border-style:dashed;border-color:var(--acc)}
+  .caja .etq{display:inline-block;margin-top:2px;font-size:.8rem;color:var(--mut);font-style:italic}
+  .foco.prot{border-style:dashed;background:transparent}
+  .foco .nota{margin:4px 0 0;color:var(--mut);font-size:.92rem}
+  .privacidad{margin:0 0 18px;padding:8px 12px;border-left:3px solid var(--acc);background:var(--accbg);font-size:.88rem;color:var(--ink)}
+  .privacidad a,footer a,.coment a{color:var(--acc)}
+  .coment .chk{font-size:.85rem;color:var(--mut);margin-top:8px}
   .foco{border:2px solid var(--acc);background:var(--accbg);padding:14px 16px}
   .foco h2{margin:0 0 6px;font-size:1.25rem}
   .foco dl{display:grid;grid-template-columns:max-content 1fr;gap:2px 12px;margin:0;font-size:.95rem}
@@ -71,6 +78,7 @@
 <div class="wrap">
   <h1>Buscador de antepasados</h1>
   <p class="sub">Escribe el nombre y los apellidos de la persona que buscas. Si está en el árbol, verás a sus padres arriba y a sus hijos debajo. Pulsa en cualquier nombre para ver su ficha.</p>
+  <p class="privacidad">🔒 <strong>Privacidad:</strong> de las personas que pueden estar vivas solo se muestra el nombre y sus vínculos familiares; de los menores de edad, ni siquiera el nombre. Si apareces en el árbol y quieres que se corrija o se retire tu nombre, pulsa sobre él y usa el formulario de tu ficha. <a id="enl-priv" href="#" target="_blank" rel="noopener">Política de privacidad</a>.</p>
 
   <form id="f" autocomplete="off">
     <label>Nombre de pila<input type="text" id="q-nom" placeholder="p. ej. José Antonio"></label>
@@ -100,6 +108,11 @@ const MAX_RESULTADOS = 200;
 // Pon aquí tu correo o, mejor, el código aleatorio que FormSubmit te da tras activar el formulario.
 // Si se deja vacío, el recuadro de comentarios no aparece.
 const COMENTARIOS_DESTINO = 'n.berbel.c@gmail.com';
+// Página con el aviso legal y la política de privacidad.
+const URL_PRIVACIDAD = 'https://familiaberbel.org/privacidad/';
+// Estados de privacidad (campo 12 de cada persona; los genera convertir_gedcom.py)
+const PUBLICA = 0, PROTEGIDA = 1, MENOR = 2, EXCLUIDA = 3;
+const estado = p => p[12] ?? (p[0] === null ? -1 : PUBLICA);   // -1: datos antiguos sin estado
 // Grupos de variantes ortográficas: cualquier forma de un grupo equivale a las demás.
 const GRUPOS_VARIANTES = [
   ['berbel','bervel','belber','belbel','velbel','velber','verbal','belver','bellver','velver','berben','berbell'],
@@ -138,7 +151,8 @@ async function cargar(){
     const nombres = [p[0], ...(p[11]||[])].map(x => norm(x).split(' ').filter(t=>t && !PARTICULAS.has(t)));
     IDX.push({id:+id, nombres, g: gruposApellido(p[1]), año: (p[3].match(/\d{4}/)||[''])[0] || (p[5].match(/\d{4}/)||[''])[0] || (p[6].match(/\d{4}/)||[''])[0]});
   }
-  document.getElementById('pie').textContent = `Datos actualizados el ${D.actualizado}. Las personas que pueden estar vivas no se muestran.`;
+  document.getElementById('pie').innerHTML = `Datos actualizados el ${esc(D.actualizado)}. De las personas que pueden estar vivas solo se muestra el nombre; los menores de edad se ocultan por completo. <a href="${URL_PRIVACIDAD}" target="_blank" rel="noopener">Aviso legal y política de privacidad</a>.`;
+  document.getElementById('enl-priv').href = URL_PRIVACIDAD;
 }
 
 /* ===== Búsqueda ===== */
@@ -172,7 +186,7 @@ function buscar(nom, ap1, ap2, variantes){
 
 /* ===== Presentación ===== */
 const P = id => D.p[id];
-const nombreCompleto = p => `${p[0]} ${p[1]}`.trim();
+const nombreCompleto = p => `${/^(x|\?+)$/i.test((p[0]||'').trim()) ? '[nombre desconocido]' : p[0]} ${p[1]}`.trim();
 function años(p){
   const y = s => (s.match(/\d{4}/)||[''])[0];
   const n = y(p[3]) || y(p[5]), d = y(p[6]);
@@ -185,7 +199,9 @@ const enlace = (id, texto) => `<a class="per" data-id="${id}" href="#p${id}" tit
 function caja(id, rol, extra=''){
   if (id == null) return `<div class="caja vacio">${rol}: sin datos</div>`;
   const p = P(id);
-  if (p[0] === null) return `<div class="caja priv">${rol}: persona privada</div>`;
+  if (p[0] === null) return `<div class="caja priv">${rol}: ${estado(p) === MENOR ? 'menor de edad · información oculta para su protección' : 'persona privada'}</div>`;
+  if (estado(p) === PROTEGIDA)
+    return `<div class="caja prot">${enlace(id, nombreCompleto(p))}<span class="etq">🔒 Datos protegidos (persona viva)${extra ? ' · ' + esc(extra) : ''}</span></div>`;
   const m = [resumen(p), extra].filter(Boolean).join(' · ');
   return `<div class="caja">${enlace(id, nombreCompleto(p))}<span class="m">${esc(m)}</span></div>`;
 }
@@ -219,7 +235,9 @@ function mostrarFicha(id){
   if (p[5]) datos.push(['Bautismo', p[5]]);
   if (p[6]) datos.push(['Defunción', p[6] === 'sí' ? 'fallecido/a' : [p[6], p[7]].filter(Boolean).join(' — ')]);
   if (p[8]) datos.push(['Oficio', p[8]]);
-  h += `<div class="caja foco"><h2>${esc(nombreCompleto(p))}</h2>` +
+  if (estado(p) === PROTEGIDA)
+    h += `<div class="caja foco prot"><h2>${esc(nombreCompleto(p))}</h2><p class="nota">🔒 Persona viva o posiblemente viva. Para proteger su privacidad solo se muestran su nombre y sus vínculos familiares.</p></div>`;
+  else h += `<div class="caja foco"><h2>${esc(nombreCompleto(p))}</h2>` +
        (datos.length ? '<dl>' + datos.map(([k,v])=>`<dt>${k}</dt><dd>${esc(v)}</dd>`).join('') + '</dl>' : '<span class="m">Sin más datos registrados.</span>') + '</div>';
 
   // Hermanos
@@ -227,7 +245,7 @@ function mostrarFicha(id){
   if (hs.length){
     const pub = hs.filter(([c]) => P(c)[0] !== null), npriv = hs.length - pub.length;
     h += `<div class="nivel">Hermanos (${hs.length})</div><div class="hijos">` + pub.map(([c,et]) => caja(c,'Hermano/a',et)).join('') +
-         (npriv ? `<div class="caja priv">${npriv === 1 ? '1 hermano/a privado/a' : npriv + ' hermanos/as privados/as'}</div>` : '') + '</div>';
+         (npriv ? `<div class="caja priv">${npriv === 1 ? '1 hermano/a con información oculta para su protección' : npriv + ' hermanos/as con información oculta para su protección'}</div>` : '') + '</div>';
   }
 
   // Parejas e hijos (incluye parejas sin hijos registrados)
@@ -256,16 +274,22 @@ function mostrarFicha(id){
 
 /* ===== Comentarios ===== */
 function formularioComentario(id, p){
+  const prot = estado(p) === PROTEGIDA;
+  const cab = prot
+    ? `<h3>¿Eres ${esc(nombreCompleto(p))} o un familiar directo?</h3>
+    <p class="m">Puedes pedir que se corrija o que se retire este nombre del buscador; se atenderá en un plazo máximo de un mes. También puedes enviar cualquier otro comentario. El mensaje llega directamente al autor de familiaberbel.org y no se publica.</p>`
+    : `<h3>¿Sabes algo más de ${esc(nombreCompleto(p))}?</h3>
+    <p class="m">Si tienes datos, documentos, fotos o una corrección sobre esta persona, escríbelo aquí. El mensaje llega directamente al autor de familiaberbel.org y no se publica.</p>`;
   return `<form class="coment" data-pid="${id}">
-    <h3>¿Sabes algo más de ${esc(nombreCompleto(p))}?</h3>
-    <p class="m">Si tienes datos, documentos, fotos o una corrección sobre esta persona, escríbelo aquí. El mensaje llega directamente al autor de familiaberbel.org y no se publica.</p>
+    ${cab}
     <div class="dos">
       <label>Tu nombre<input type="text" name="nombre" maxlength="100" required></label>
       <label>Tu correo (para poder responderte)<input type="email" name="email" maxlength="150" required></label>
     </div>
     <label>Comentario<textarea name="comentario" maxlength="5000" required placeholder="p. ej. Era mi bisabuela; tengo su partida de bautismo de Íllora…"></textarea></label>
+    <label class="chk"><input type="checkbox" name="acepto" required> He leído la <a href="${URL_PRIVACIDAD}" target="_blank" rel="noopener">política de privacidad</a> y acepto que mi nombre y correo se usen solo para responder a este mensaje.</label>
     <label class="trampa" aria-hidden="true">No rellenar<input type="text" name="_honey" tabindex="-1" autocomplete="off"></label>
-    <div class="acc"><button type="submit">Enviar comentario</button><span class="res-env" role="status"></span></div>
+    <div class="acc"><button type="submit">${prot ? 'Enviar solicitud o comentario' : 'Enviar comentario'}</button><span class="res-env" role="status"></span></div>
   </form>`;
 }
 
@@ -275,7 +299,7 @@ async function enviarComentario(form){
   if (fd.get('_honey')) return;                    // robot
   const persona = nombreCompleto(p), ficha = location.origin + location.pathname + '#p' + id;
   const cuerpo = {
-    _subject: `Comentario sobre ${persona} — Buscador familiaberbel.org`,
+    _subject: (estado(p) === PROTEGIDA ? `Persona viva (solicitud o comentario): ${persona}` : `Comentario sobre ${persona}`) + ' — Buscador familiaberbel.org',
     _template: 'table',
     _replyto: fd.get('email'),
     'Persona': `${persona}${años(p) ? ' (' + años(p) + ')' : ''}`,
@@ -283,6 +307,7 @@ async function enviarComentario(form){
     'Nombre del visitante': fd.get('nombre'),
     'Correo del visitante': fd.get('email'),
     'Comentario': fd.get('comentario'),
+    'Acepta la política de privacidad': fd.get('acepto') ? 'sí' : 'no',
   };
   btn.disabled = true; res.className = 'res-env'; res.textContent = 'Enviando…';
   try {
@@ -358,7 +383,7 @@ function ejecutar(){
   if (ids.length === 1){ lista.hidden=true; irA(ids[0], true); est.textContent='1 resultado'; return; }
   const mostrar = ids.slice(0, MAX_RESULTADOS);
   est.textContent = ids.length > MAX_RESULTADOS ? `${ids.length} resultados; se muestran los ${MAX_RESULTADOS} primeros. Añade más datos para afinar.` : `${ids.length} resultados. Elige uno:`;
-  lista.innerHTML = mostrar.map(id => { const p=P(id); return `<li><button type="button" data-id="${id}"><span class="n">${esc(nombreCompleto(p))}</span><span class="m">${esc(resumen(p)) || 'sin fechas'}</span></button></li>`; }).join('');
+  lista.innerHTML = mostrar.map(id => { const p=P(id); return `<li><button type="button" data-id="${id}"><span class="n">${esc(nombreCompleto(p))}</span><span class="m">${estado(p) === PROTEGIDA ? '🔒 datos protegidos (persona viva)' : (esc(resumen(p)) || 'sin fechas')}</span></button></li>`; }).join('');
   lista.hidden = false;
 }
 
