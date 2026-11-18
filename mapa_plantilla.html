@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mapa del apellido Berbel y sus variantes · Familia Berbel</title>
+<meta name="description" content="Dónde viven y dónde nacieron hoy las personas apellidadas Berbel, Bellver, Belver, Belber y Bervel en España, por provincia y municipio. Datos del INE.">
+<style>
+  :root{--bg:#fbfaf7;--card:#fff;--ink:#222;--mut:#6b6b66;--line:#ddd9cf;--acc:#0f615d;--accbg:#e4f0ee;--land:#efede6;--landA:#e2ece6;--sea:#f4f7f8;--na:#b9b6ad}
+  @media (prefers-color-scheme:dark){:root{--bg:#1c1b19;--card:#262522;--ink:#ece9e2;--mut:#a5a198;--line:#3b3935;--acc:#7cc7bd;--accbg:#1f3331;--land:#2c2b28;--landA:#28362f;--sea:#1f2222;--na:#6d6a63}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Georgia,"Times New Roman",serif}
+  .wrap{max-width:1000px;margin:0 auto;padding:20px 16px 48px}
+  .nav{font-size:.9rem;margin-bottom:10px}.nav a{color:var(--acc)}
+  h1{font-size:1.6rem;margin:0 0 4px}
+  .sub{color:var(--mut);margin:0 0 16px;font-size:.95rem}
+  .filtros{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:flex-end;margin:0 0 14px}
+  .grupo{display:flex;flex-direction:column;gap:4px}
+  .grupo>span{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mut)}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--card);flex-wrap:wrap}
+  .seg button{font:inherit;font-size:.9rem;padding:6px 12px;border:0;background:transparent;color:var(--ink);cursor:pointer}
+  .seg button+button{border-left:1px solid var(--line)}
+  .seg button[aria-pressed=true]{background:var(--acc);color:#fff}
+  @media (prefers-color-scheme:dark){.seg button[aria-pressed=true]{color:#1c1b19}}
+  .seg button:disabled{opacity:.4;cursor:not-allowed}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 14px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .kpi b{display:block;font-size:1.45rem;line-height:1.2}
+  .kpi span{font-size:.82rem;color:var(--mut)}
+  .cuerpo{display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start}
+  .mapa{background:var(--sea);border:1px solid var(--line);border-radius:10px;position:relative;overflow:hidden}
+  .mapa svg{display:block;width:100%;height:auto}
+  .tierra{fill:var(--land);stroke:var(--line);stroke-width:1}
+  .prov{stroke:var(--card);stroke-width:.8;stroke-linejoin:round}
+  .prov.con,.mun{cursor:pointer}
+  .prov.con:hover,.prov.sel{stroke:var(--ink);stroke-width:1.6}
+  .mun{stroke:var(--card);stroke-width:.25}
+  .mun.con:hover,.mun.sel{stroke:var(--ink);stroke-width:.8}
+  .provAnd{fill:none;stroke:var(--mut);stroke-width:.7;pointer-events:none}
+  .andal{fill:none;stroke:var(--acc);stroke-width:1.6;pointer-events:none}
+  .pt{fill:var(--mut);font-size:11px;font-family:system-ui,sans-serif}
+  .burbuja{stroke:var(--card);stroke-width:2;cursor:pointer}
+  .burbuja:hover,.burbuja.sel{stroke:var(--ink)}
+  .na{fill:none;stroke:var(--na);stroke-width:1.5;stroke-dasharray:2 2;cursor:pointer}
+  .et{font-size:12px;font-family:system-ui,sans-serif;fill:var(--ink);paint-order:stroke;stroke:var(--sea);stroke-width:3px;stroke-linejoin:round;pointer-events:none}
+  .inset{fill:none;stroke:var(--line)}
+  .leyenda{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;font-size:.8rem;color:var(--mut);padding:8px 12px;border-top:1px solid var(--line);background:var(--card);font-family:system-ui,sans-serif}
+  .leyenda i{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:4px}
+  #tip{position:absolute;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:.85rem;box-shadow:0 4px 14px rgba(0,0,0,.12);display:none;max-width:240px;font-family:system-ui,sans-serif;line-height:1.35}
+  #tip b{display:block;font-size:.95rem}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
+  .panel h2{font-size:1rem;margin:0 0 8px}
+  .rk{list-style:none;margin:0;padding:0;font-family:system-ui,sans-serif;font-size:.85rem}
+  .rk li{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:5px 4px;border-radius:6px;cursor:pointer}
+  .rk li:hover,.rk li.sel{background:var(--accbg)}
+  .rk .barra{grid-column:1/-1;height:6px;border-radius:3px;background:var(--acc);opacity:.8}
+  .rk .v{font-variant-numeric:tabular-nums;color:var(--mut)}
+  .rk .v b{color:var(--ink)}
+  details{margin-top:16px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+  summary{cursor:pointer;font-weight:bold}
+  table{border-collapse:collapse;width:100%;font-family:system-ui,sans-serif;font-size:.85rem;margin-top:8px}
+  th,td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line)}
+  td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+  #filtroMuni{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);width:100%;max-width:320px;margin-top:8px}
+  .notas{font-size:.85rem;color:var(--mut);margin-top:18px}
+  .cta{margin-top:18px;padding:14px 16px;border-radius:10px;background:linear-gradient(135deg,#0a4744,#0f615d 55%,#1b7a74);color:#fff;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between}
+  .cta a{background:#ffff00;color:#0a4744;font-weight:bold;padding:9px 16px;border-radius:8px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+  @media (max-width:820px){.cuerpo{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="nav"><a href="https://familiaberbel.org/">← familiaberbel.org</a> · <a href="./">Buscador de antepasados</a></div>
+  <h1>Mapa del apellido Berbel</h1>
+  <p class="sub">Cuántas personas llevan hoy el apellido Berbel y sus variantes en España, y dónde viven o nacieron. Datos actuales del Padrón (INE).</p>
+
+  <div class="filtros" role="group" aria-label="Filtros del mapa">
+    <div class="grupo"><span>Grafía</span><div class="seg" id="fGrafia"></div></div>
+    <div class="grupo"><span>Apellido</span><div class="seg" id="fOrden"></div></div>
+    <div class="grupo"><span>Por</span><div class="seg" id="fLugar"></div></div>
+    <div class="grupo"><span>Vista</span><div class="seg" id="fVista"></div></div>
+    <div class="grupo"><span>Color del mapa</span><div class="seg" id="fColor"></div></div>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="cuerpo">
+    <div class="mapa" id="mapa">
+      <svg id="svg" role="img" aria-labelledby="svgT"><title id="svgT">Mapa de España coloreado según la presencia del apellido</title></svg>
+      <div id="tip"></div>
+      <div class="leyenda" id="leyenda"></div>
+    </div>
+    <div class="panel">
+      <h2 id="rkTit"></h2>
+      <ol class="rk" id="rk"></ol>
+    </div>
+  </div>
+
+  <details id="detMuni">
+    <summary>Todos los municipios con datos publicados</summary>
+    <input id="filtroMuni" type="search" placeholder="Filtrar por municipio o provincia…" aria-label="Filtrar municipios">
+    <table><thead><tr><th>Municipio</th><th>Provincia</th><th class="n">Personas</th><th class="n">Por mil hab.</th></tr></thead><tbody id="tMuni"></tbody></table>
+  </details>
+  <details>
+    <summary>Tabla por provincias</summary>
+    <table><thead><tr><th>Provincia</th><th class="n">Personas</th><th class="n">Por mil hab.</th></tr></thead><tbody id="tProv"></tbody></table>
+  </details>
+
+  <div class="cta"><span>¿Llevas alguno de estos apellidos? Busca a tus antepasados en el árbol de la familia.</span><a href="./">Buscar a mi antepasado</a></div>
+
+  <p class="notas">
+    <b>Fuente:</b> Instituto Nacional de Estadística, Estadística del Padrón Continuo, «Frecuencia de apellidos» (consulta de noviembre de 2026). Son datos de población actual: no muestran la distribución histórica del apellido.<br>
+    El INE oculta las cifras menores de 5 por secreto estadístico; aparecen como «menos de 5» y rayados en el mapa. Por eso, cuando se suman varias grafías o los dos apellidos, algunas cifras son un mínimo («al menos»).
+    «Cualquiera» cuenta a las personas que lo llevan como primer o segundo apellido, sin contar dos veces a quienes lo llevan en ambos.
+    Los municipios solo existen para el lugar de residencia y el INE solo los publica donde la cifra no es secreta.
+    Límites provinciales: Instituto Geográfico Nacional, a través de <a href="https://github.com/martgnz/es-atlas">es-atlas</a> (licencia MIT). En la vista de Andalucía se colorea cada término municipal.
+  </p>
+</div>
+
+<script id="datos" type="application/json">/*DATOS_INE*/</script>
+<script id="geo" type="application/json">/*DATOS_GEO*/</script>
+<script>
+const D = JSON.parse(document.getElementById('datos').textContent);
+
+/* Coordenadas aproximadas [lon, lat] de las capitales de provincia */
+const CAP = {
+ 'Albacete':[-1.86,38.99],'Alicante/Alacant':[-0.48,38.35],'Almería':[-2.46,36.84],'Araba/Álava':[-2.67,42.85],
+ 'Asturias':[-5.85,43.36],'Ávila':[-4.70,40.66],'Badajoz':[-6.97,38.88],'Balears, Illes':[2.65,39.57],
+ 'Barcelona':[2.17,41.39],'Bizkaia':[-2.93,43.26],'Burgos':[-3.70,42.34],'Cáceres':[-6.37,39.47],
+ 'Cádiz':[-6.0,36.6],'Cantabria':[-3.80,43.40],'Castellón/Castelló':[-0.04,39.99],'Ciudad Real':[-3.93,38.99],
+ 'Córdoba':[-4.78,37.89],'Coruña, A':[-8.41,43.30],'Cuenca':[-2.13,40.07],'Gipuzkoa':[-2.05,43.20],
+ 'Girona':[2.82,41.98],'Granada':[-3.60,37.18],'Guadalajara':[-3.17,40.63],'Huelva':[-6.95,37.26],
+ 'Huesca':[-0.41,42.14],'Jaén':[-3.79,37.77],'León':[-5.57,42.60],'Lleida':[0.62,41.62],'Lugo':[-7.56,43.01],
+ 'Madrid':[-3.70,40.42],'Málaga':[-4.42,36.72],'Murcia':[-1.13,37.99],'Navarra':[-1.64,42.81],
+ 'Ourense':[-7.86,42.34],'Palencia':[-4.53,42.01],'Palmas, Las':[-15.43,28.12],'Pontevedra':[-8.64,42.43],
+ 'Rioja, La':[-2.45,42.47],'Salamanca':[-5.66,40.97],'Santa Cruz de Tenerife':[-16.25,28.47],'Segovia':[-4.12,40.95],
+ 'Sevilla':[-5.98,37.39],'Soria':[-2.46,41.76],'Tarragona':[1.25,41.12],'Teruel':[-1.11,40.34],'Toledo':[-4.02,39.86],
+ 'Valencia/València':[-0.38,39.47],'Valladolid':[-4.72,41.65],'Zamora':[-5.74,41.50],'Zaragoza':[-0.88,41.65],
+ 'Ceuta':[-5.32,35.89],'Melilla':[-2.94,35.29]
+};
+/* Límites oficiales (IGN, vía es-atlas, licencia MIT), ya proyectados */
+const GEO = JSON.parse(document.getElementById('geo').textContent);
+const COD = {'Araba/Álava':'01','Albacete':'02','Alicante/Alacant':'03','Almería':'04','Ávila':'05','Badajoz':'06','Balears, Illes':'07',
+ 'Barcelona':'08','Burgos':'09','Cáceres':'10','Cádiz':'11','Castellón/Castelló':'12','Ciudad Real':'13','Córdoba':'14','Coruña, A':'15',
+ 'Cuenca':'16','Girona':'17','Granada':'18','Guadalajara':'19','Gipuzkoa':'20','Huelva':'21','Huesca':'22','Jaén':'23','León':'24',
+ 'Lleida':'25','Rioja, La':'26','Lugo':'27','Madrid':'28','Málaga':'29','Murcia':'30','Navarra':'31','Ourense':'32','Asturias':'33',
+ 'Palencia':'34','Palmas, Las':'35','Pontevedra':'36','Salamanca':'37','Santa Cruz de Tenerife':'38','Cantabria':'39','Segovia':'40',
+ 'Sevilla':'41','Soria':'42','Tarragona':'43','Teruel':'44','Toledo':'45','Valencia/València':'46','Valladolid':'47','Bizkaia':'48',
+ 'Zamora':'49','Zaragoza':'50','Ceuta':'51','Melilla':'52'};
+const NOM = Object.fromEntries(Object.entries(COD).map(([n,c])=>[c,n]));
+const normM = x => { x=x.trim().toLowerCase(); const m=x.match(/^(.*), (el|la|las|los)$/); return m ? m[2]+' '+m[1] : x; };
+const MCOD = Object.fromEntries(Object.entries(GEO.munNom).map(([c,n])=>[c.slice(0,2)+'|'+normM(n), c]));
+const codMuni = r => MCOD[(COD[r.prov]||'')+'|'+normM(r.n)];
+
+/* Proyección (la misma que construir_geo.py) */
+const K = 100, CO = Math.cos(40*Math.PI/180);
+const px = ([lo,la]) => [(lo+10)*K*CO, (44-la)*K];
+const pxCan = ([lo,la]) => px([-9.75+(lo+18.3)*.6, 35.15+(la-27.55)*.6]);
+const posProv = n => (n==='Palmas, Las'||n==='Santa Cruz de Tenerife') ? pxCan(CAP[n]) : (CAP[n] ? px(CAP[n]) : null);
+const caja = (a,b) => { const [x0,y0]=px(a),[x1,y1]=px(b); return [x0,y0,x1-x0,y1-y0].map(v=>v.toFixed(1)).join(' '); };
+const VISTAS = {
+  espana:{vb:caja([-9.9,44.0],[4.5,35.0]), sc:1},
+  andalucia:{vb:caja([-7.65,38.85],[-1.45,35.95]), sc:.42}
+};
+
+const st = {grafia:'Berbel', orden:'cualquiera', lugar:'residencia', vista:'espana', color:'p', sel:null};
+const GRAF = ['Todas', ...D.grafias];
+const ORD = [['cualquiera','Cualquiera'],['1','1.º'],['2','2.º'],['ambos','Los dos']];
+const LUG = [['residencia','Residencia'],['nacimiento','Nacimiento']];
+const VIS = [['espana','España'],['andalucia','Andalucía']];
+const COL = [['p','Frecuencia (‰)'],['t','Nº de personas']];
+
+const fmt = n => n==null ? '—' : String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+const fmtM = n => n==null ? '—' : n.toLocaleString('es-ES',{minimumFractionDigits: n<1?3:2, maximumFractionDigits: n<1?3:2});
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const bonito = n => n.replace(/^(.*), (El|La|Las|Los|L'|A|Illes|l'|el|la)$/, (m,a,b)=> b.endsWith("'")? b+a : b+' '+a).replace(/\/.*$/,'');
+
+/* Valor [personas, ‰, parcial] de una fila INE según el orden elegido */
+function valor(v){
+  if(!v) return null;
+  const [t1,p1,t2,p2,ta,pa] = v;
+  if(st.orden==='1') return t1==null?{t:null}:{t:t1,p:p1};
+  if(st.orden==='2') return t2==null?{t:null}:{t:t2,p:p2};
+  if(st.orden==='ambos') return ta==null?{t:null}:{t:ta,p:pa};
+  if(t1==null && t2==null) return {t:null};
+  const t=(t1||0)+(t2||0)-(ta||0), p=(p1||0)+(p2||0)-(pa||0);
+  return {t, p, parcial: t1==null||t2==null};
+}
+/* Suma de varias grafías */
+function combinar(lista){
+  let t=0,p=0,alguno=false,parcial=false,hay=false;
+  for(const v of lista){ if(!v) continue; hay=true; const r=valor(v);
+    if(r.t==null){parcial=true;continue} alguno=true; t+=r.t; p+=r.p; if(r.parcial)parcial=true; }
+  if(!hay) return null;
+  return alguno ? {t,p,parcial} : {t:null};
+}
+const grafias = () => st.grafia==='Todas' ? D.grafias : [st.grafia];
+
+function datosProv(){
+  const tipo = st.lugar, nombres = new Set();
+  grafias().forEach(g=>Object.keys(D[tipo][g]).forEach(n=>nombres.add(n)));
+  return [...nombres].map(n=>({n, ...combinar(grafias().map(g=>D[tipo][g][n]))})).filter(r=>r.t!==undefined);
+}
+function datosMuni(){
+  const m = new Map();
+  for(const g of grafias()) for(const r of D.municipios[g]){
+    const k=r[0]+'|'+r[1]; if(!m.has(k)) m.set(k,{n:r[0],prov:r[1],filas:[]}); m.get(k).filas.push(r.slice(2));
+  }
+  return [...m.values()].map(o=>({n:o.n, prov:o.prov, ...combinar(o.filas)}));
+}
+function totalEspana(){
+  return combinar(grafias().map(g=>D.totales[g][st.lugar]));
+}
+
+/* Escala secuencial (un solo tono verde, de claro a oscuro) */
+const VERDES = ['#cfe7e3','#9fcfc7','#5faea3','#1f7d74','#0a4744'];
+function cortes(vals){
+  const v = vals.filter(x=>x>0).sort((a,b)=>a-b); if(!v.length) return [0,0,0,0];
+  const q = f => v[Math.min(v.length-1, Math.floor(f*v.length))];
+  const r = [q(.2),q(.4),q(.6),q(.8)];
+  return r.map(x=> x<0.1 ? +x.toFixed(3) : x<1 ? +x.toFixed(2) : +x.toFixed(1));
+}
+const colorDe = (p,c) => VERDES[c.filter(x=>p>=x).length];
+
+function botones(id, opciones, clave, alCambiar){
+  const el = document.getElementById(id); el.innerHTML='';
+  for(const [v,t] of opciones){
+    const b=document.createElement('button'); b.type='button'; b.textContent=t; b.dataset.v=v;
+    b.setAttribute('aria-pressed', st[clave]===v);
+    b.onclick=()=>{ st[clave]=v; st.sel=null; if(alCambiar)alCambiar(); pintar(); };
+    el.appendChild(b);
+  }
+}
+function syncBotones(){
+  for(const [id,clave] of [['fGrafia','grafia'],['fOrden','orden'],['fLugar','lugar'],['fVista','vista'],['fColor','color']])
+    document.querySelectorAll('#'+id+' button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.v===st[clave]));
+  document.querySelector('#fLugar button[data-v=nacimiento]').disabled = st.vista==='andalucia';
+}
+
+
+function pintar(){
+  if(st.vista==='andalucia') st.lugar='residencia';
+  syncBotones();
+  const svg = document.getElementById('svg'), V = VISTAS[st.vista];
+  svg.setAttribute('viewBox', V.vb);
+  const tot = totalEspana();
+  const provs = datosProv();
+  const andal = provs.filter(r=>D.andalucia.includes(r.n));
+  const sumA = andal.reduce((s,r)=>s+(r.t||0),0);
+  const conT = provs.filter(r=>r.t>0 && r.n!=='Nacido en el extranjero');
+  const top = conT.slice().sort((a,b)=>b.t-a.t)[0], topM = conT.slice().sort((a,b)=>b.p-a.p)[0];
+
+  // KPIs
+  const lugarTxt = st.lugar==='residencia' ? 'que viven' : 'nacidas';
+  document.getElementById('kpis').innerHTML = `
+    <div class="kpi"><b>${tot&&tot.t!=null?(tot.parcial?'≥ ':'')+fmt(tot.t):'menos de 5'}</b><span>personas en España</span></div>
+    <div class="kpi"><b>${tot&&tot.t?Math.round(100*sumA/tot.t)+' %':'—'}</b><span>${lugarTxt} en Andalucía (${fmt(sumA)})</span></div>
+    <div class="kpi"><b>${top?esc(bonito(top.n)):'—'}</b><span>provincia con más personas${top?' ('+fmt(top.t)+')':''}</span></div>
+    <div class="kpi"><b>${topM?esc(bonito(topM.n)):'—'}</b><span>donde es más frecuente${topM?' ('+fmtM(topM.p)+' ‰)':''}</span></div>`;
+
+  // Elementos del mapa
+  const muni = st.vista==='andalucia';
+  const metrica = r => st.color==='p' ? r.p : r.t;
+  const porProv = Object.fromEntries(provs.map(r=>[COD[r.n],r]));
+  let puntos, porMun = {};
+  if(muni){
+    puntos = datosMuni().filter(r=>D.andalucia.includes(r.prov)).map(r=>{ const cod=codMuni(r); return {...r, cod, xy:GEO.munCen[cod]}; }).filter(r=>r.xy);
+    puntos.forEach(r=>porMun[r.cod]=r);
+  } else {
+    puntos = provs.map(r=>({...r, cod:COD[r.n], xy:posProv(r.n)})).filter(r=>r.xy);
+  }
+  const c = cortes(puntos.map(r=>r.t==null?0:metrica(r)));
+  let s = '';
+  const relleno = r => r && r.t!=null ? colorDe(metrica(r), c) : (r ? 'url(#rayas)' : 'var(--land)');
+  s += `<defs><pattern id="rayas" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="4" height="4" fill="var(--land)"/><line x1="0" y1="0" x2="0" y2="4" stroke="var(--na)" stroke-width="1.5"/></pattern></defs>`;
+  if(!muni){
+    for(const [cod,d] of Object.entries(GEO.prov)){
+      const r = porProv[cod];
+      s += `<path class="prov${r?' con':''}${st.sel===NOM[cod]?' sel':''}" data-c="${cod}" d="${d}" fill="${relleno(r)}"/>`;
+    }
+  } else {
+    for(const [cod,d] of Object.entries(GEO.prov)) if(!D.andalucia.includes(NOM[cod])) s += `<path class="prov" d="${d}" fill="var(--land)"/>`;
+    for(const [cod,d] of Object.entries(GEO.mun)){
+      const r = porMun[cod];
+      s += `<path class="mun${r?' con':''}${r&&st.sel===r.n?' sel':''}" data-m="${cod}" d="${d}" fill="${relleno(r)}"/>`;
+    }
+    for(const [cod,d] of Object.entries(GEO.prov)) if(D.andalucia.includes(NOM[cod])) s += `<path class="provAnd" d="${d}"/>`;
+  }
+  s += `<path class="andal" d="${GEO.ccaa['Andalucía']}"/>`;
+  if(!muni){
+    const [x0,y0]=pxCan([-18.4,29.6]),[x1,y1]=pxCan([-13.2,27.45]);
+    s += `<rect class="inset" x="${x0.toFixed(1)}" y="${y0.toFixed(1)}" width="${(x1-x0).toFixed(1)}" height="${(y1-y0).toFixed(1)}" rx="6"/>`;
+    s += `<text class="pt" x="${(x0+8).toFixed(1)}" y="${(y0+18).toFixed(1)}" style="font-size:15px">Canarias</text>`;
+    const m=px([-2.94,35.29]); s += `<text class="pt" x="${m[0]+14}" y="${m[1]+5}" style="font-size:15px">Melilla</text>`;
+    const ce=px([-5.32,35.89]); s += `<text class="pt" x="${ce[0]-14}" y="${ce[1]+16}" text-anchor="end" style="font-size:15px">Ceuta</text>`;
+    const pt=px([-8.4,39.6]); s += `<text class="pt" x="${pt[0]}" y="${pt[1]}" text-anchor="middle" style="font-size:15px;letter-spacing:.1em">PORTUGAL</text>`;
+    const fr=px([0.5,43.3]); s += `<text class="pt" x="${fr[0]}" y="${fr[1]}" text-anchor="middle" style="font-size:15px;letter-spacing:.1em">FRANCIA</text>`;
+  } else {
+    for(const [n,ll] of [['HUELVA',[-6.75,37.75]],['SEVILLA',[-5.6,37.85]],['CÓRDOBA',[-4.75,38.3]],['JAÉN',[-3.45,38.35]],['GRANADA',[-3.3,36.93]],['ALMERÍA',[-2.55,37.7]],['MÁLAGA',[-4.85,36.97]],['CÁDIZ',[-5.75,36.42]],
+        ['Extremadura',[-6.3,38.6]],['Castilla-La Mancha',[-3.3,38.7]],['Murcia',[-1.65,37.95]],['PORTUGAL',[-7.2,38.05]]]){
+      const q=px(ll); s += `<text class="pt" x="${q[0].toFixed(1)}" y="${q[1].toFixed(1)}" text-anchor="middle" style="font-size:7px;letter-spacing:.08em;opacity:.8">${n}</text>`;
+    }
+  }
+  // Etiquetas de los mayores
+  const orden = puntos.slice().sort((a,b)=>(b.t||0)-(a.t||0));
+  const puestas = [];
+  orden.filter(r=>r.t>0).slice(0, muni?12:8).forEach(r=>{
+    const [x,y]=r.xy;
+    if(muni && puestas.some(([a,b])=>Math.abs(a-x)<28 && Math.abs(b-y)<9)) return;
+    puestas.push([x,y]);
+    s += `<text class="et" x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" style="font-size:${(muni?7:17)}px;stroke-width:${muni?2:4}px">${esc(bonito(r.n))} · ${fmt(r.t)}</text>`;
+  });
+  svg.innerHTML = s;
+  const enganchar = (el, r, n) => {
+    el.addEventListener('mousemove', ev=>tip(ev,r));
+    el.addEventListener('mouseleave', ()=>tipOff());
+    el.addEventListener('click', ev=>{ st.sel = st.sel===n?null:n; pintar(); tip(ev,r); });
+  };
+  if(!muni) svg.querySelectorAll('path.prov[data-c]').forEach(el=>{
+    const n = NOM[el.dataset.c]; enganchar(el, porProv[el.dataset.c] || {n, vacio:true}, n);
+  });
+  else svg.querySelectorAll('path.mun').forEach(el=>{
+    const cod = el.dataset.m, r = porMun[cod] || {n:GEO.munNom[cod], vacio:true}; enganchar(el, r, r.n);
+  });
+
+  // Leyenda
+  const fm = st.color==='p' ? fmtM : fmt;
+  const rangos = [`< ${fm(c[0])}`, ...c.slice(0,3).map((x,i)=>`${fm(x)}–${fm(c[i+1])}`), `≥ ${fm(c[3])}`];
+  document.getElementById('leyenda').innerHTML =
+    `<span>${st.color==='p' ? 'Por mil habitantes:' : 'Personas:'}</span>` + VERDES.map((col,i)=>`<span><i style="background:${col}"></i>${rangos[i]}</span>`).join('') +
+    `<span><i style="background:repeating-linear-gradient(45deg,var(--na) 0 2px,var(--land) 2px 5px)"></i>menos de 5</span>` +
+    `<span><i style="background:var(--land);border:1px solid var(--line)"></i>sin datos publicados</span>`;
+
+  // Ranking
+  const lista = (muni ? puntos : provs.filter(r=>r.n!=='Nacido en el extranjero')).filter(r=>r.t>0).sort((a,b)=>b.t-a.t).slice(0,15);
+  document.getElementById('rkTit').textContent = muni ? 'Municipios andaluces con más personas' : 'Provincias con más personas';
+  const mx = lista[0] ? lista[0].t : 1;
+  document.getElementById('rk').innerHTML = lista.map(r=>`<li data-n="${esc(r.n)}" class="${st.sel===r.n?'sel':''}">
+      <span>${esc(bonito(r.n))}${muni?` <span class="v">(${esc(bonito(r.prov))})</span>`:''}</span>
+      <span class="v"><b>${r.parcial?'≥ ':''}${fmt(r.t)}</b> · ${fmtM(r.p)} ‰</span>
+      <span class="barra" style="width:${(100*r.t/mx).toFixed(1)}%"></span></li>`).join('') || '<li>Sin datos publicados.</li>';
+  document.querySelectorAll('#rk li[data-n]').forEach(li=>li.onclick=()=>{ st.sel = st.sel===li.dataset.n?null:li.dataset.n; pintar(); });
+
+  // Tablas
+  document.getElementById('tProv').innerHTML = provs.slice().sort((a,b)=>(b.t||0)-(a.t||0)).map(r=>
+    `<tr><td>${esc(bonito(r.n))}</td><td class="n">${r.t==null?'menos de 5':(r.parcial?'≥ ':'')+fmt(r.t)}</td><td class="n">${r.t==null?'—':fmtM(r.p)}</td></tr>`).join('');
+  tablaMuni();
+}
+
+function tablaMuni(){
+  const f = document.getElementById('filtroMuni').value.trim().toLowerCase();
+  const filas = datosMuni().filter(r=>!f || (r.n+' '+r.prov).toLowerCase().includes(f)).sort((a,b)=>(b.t||0)-(a.t||0));
+  document.getElementById('tMuni').innerHTML = filas.map(r=>
+    `<tr><td>${esc(bonito(r.n))}</td><td>${esc(bonito(r.prov))}</td><td class="n">${r.t==null?'menos de 5':(r.parcial?'≥ ':'')+fmt(r.t)}</td><td class="n">${r.t==null?'—':fmtM(r.p)}</td></tr>`).join('');
+}
+document.getElementById('filtroMuni').addEventListener('input', tablaMuni);
+
+const tipEl = document.getElementById('tip');
+function tip(ev, r){
+  const box = document.getElementById('mapa').getBoundingClientRect();
+  tipEl.innerHTML = `<b>${esc(bonito(r.n))}</b>${r.prov?esc(bonito(r.prov))+'<br>':''}` +
+    (r.vacio ? 'Sin datos publicados por el INE' : r.t==null ? 'Menos de 5 personas (dato secreto del INE)' :
+     `${r.parcial?'Al menos ':''}${fmt(r.t)} personas<br>${fmtM(r.p)} por mil habitantes`);
+  tipEl.style.display='block';
+  let x = ev.clientX-box.left+14, y = ev.clientY-box.top+14;
+  if(x+250>box.width) x = ev.clientX-box.left-250;
+  tipEl.style.left=x+'px'; tipEl.style.top=y+'px';
+}
+function tipOff(){ tipEl.style.display='none'; }
+
+botones('fGrafia', GRAF.map(g=>[g,g==='Todas'?'Todas':g]), 'grafia');
+botones('fOrden', ORD, 'orden');
+botones('fLugar', LUG, 'lugar');
+botones('fColor', COL, 'color');
+botones('fVista', VIS, 'vista', ()=>{ if(st.vista==='andalucia') st.lugar='residencia'; });
+const q = new URLSearchParams(location.search);
+if(GRAF.includes(q.get('grafia'))) st.grafia=q.get('grafia');
+if(q.get('vista')==='andalucia') st.vista='andalucia';
+pintar();
+</script>
+</body>
+</html>
