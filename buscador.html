@@ -34,6 +34,8 @@
   #rastro a{color:var(--acc);cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
   #rastro .sep{margin:0 6px}
   #rastro .act{color:var(--ink);font-weight:bold}
+  .mapaAviso{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:-6px 0 16px;padding:10px 14px;border-radius:8px;background:linear-gradient(135deg,#0a4744,#0f615d 55%,#1b7a74);color:#fff;text-decoration:none;font-size:.95rem}
+  .mapaAviso:hover{filter:brightness(1.1)}
   .aviso{margin:8px 0 0;padding:8px 12px;border-radius:6px;background:var(--accbg);font-size:.9rem}
   /* Ficha */
   .arbol{margin-top:10px;display:flex;flex-direction:column;gap:6px}
@@ -114,6 +116,7 @@
 <div class="wrap">
   <h1>Buscador de antepasados</h1>
   <p class="sub">Escribe el nombre y los apellidos de la persona que buscas. Si está en el árbol, verás a sus padres arriba y a sus hijos debajo. Pulsa en cualquier nombre para ver su ficha.</p>
+  <a class="mapaAviso" href="apellido.html"><span>🗺️ <b>Nuevo:</b> ¿dónde viven hoy los Berbel? Descúbrelo en el mapa del apellido</span><span aria-hidden="true">→</span></a>
   <p class="privacidad">🔒 <strong>Privacidad:</strong> de las personas que pueden estar vivas solo se muestra el nombre y sus vínculos familiares; de los menores de edad, ni siquiera el nombre. Si apareces en el árbol y quieres que se corrija o se retire tu nombre, pulsa sobre él y usa el formulario de tu ficha. <a id="enl-priv" href="#" target="_blank" rel="noopener">Política de privacidad</a>.</p>
 
   <form id="f" autocomplete="off">
