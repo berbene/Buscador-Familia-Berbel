@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buscador de antepasados</title>
+<style>
+  :root{--bg:#fbfaf7;--card:#fff;--ink:#222;--mut:#6b6b66;--line:#ddd9cf;--acc:#7a3b1d;--accbg:#f4ebe4;--priv:#999;--ok:#2f6b2f;--err:#a32020}
+  @media (prefers-color-scheme:dark){:root{--bg:#1c1b19;--card:#262522;--ink:#ece9e2;--mut:#a5a198;--line:#3b3935;--acc:#e0a27d;--accbg:#33281f;--priv:#777;--ok:#8fd18f;--err:#f08a8a}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Georgia,"Times New Roman",serif}
+  .wrap{max-width:860px;margin:0 auto;padding:20px 16px 48px}
+  h1{font-size:1.5rem;margin:0 0 4px}
+  .sub{color:var(--mut);margin:0 0 18px;font-size:.95rem}
+  form#f{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-items:end}
+  label{display:flex;flex-direction:column;font-size:.85rem;color:var(--mut);gap:4px}
+  input[type=text],input[type=email],textarea{font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);width:100%}
+  textarea{min-height:110px;resize:vertical}
+  input:focus,textarea:focus{outline:2px solid var(--acc);outline-offset:0}
+  .row2{grid-column:1/-1;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;padding:9px 18px;border:0;border-radius:6px;background:var(--acc);color:#fff;cursor:pointer}
+  button:disabled{opacity:.6;cursor:default}
+  @media (prefers-color-scheme:dark){button{color:#1c1b19}}
+  button.sec{background:transparent;color:var(--acc);border:1px solid var(--acc)}
+  .chk{flex-direction:row;align-items:center;gap:6px;font-size:.9rem}
+  #estado{margin:16px 0 0;color:var(--mut);font-size:.9rem}
+  .res{list-style:none;margin:10px 0 0;padding:0;border:1px solid var(--line);border-radius:8px;background:var(--card);overflow:hidden}
+  .res li+li{border-top:1px solid var(--line)}
+  .res button{all:unset;display:block;width:100%;padding:10px 14px;cursor:pointer;box-sizing:border-box}
+  .res button:hover,.res button:focus-visible{background:var(--accbg)}
+  .res .n{font-weight:bold}.res .m{display:block;color:var(--mut);font-size:.85rem}
+  /* Recorrido */
+  #rastro{margin:20px 0 0;font-size:.9rem;color:var(--mut);line-height:1.8}
+  #rastro a{color:var(--acc);cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
+  #rastro .sep{margin:0 6px}
+  #rastro .act{color:var(--ink);font-weight:bold}
+  .aviso{margin:8px 0 0;padding:8px 12px;border-radius:6px;background:var(--accbg);font-size:.9rem}
+  /* Ficha */
+  .arbol{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+  .nivel{font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:14px 0 4px}
+  .padres{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .caja{border:1px solid var(--line);border-radius:8px;background:var(--card);padding:10px 12px;min-height:56px}
+  a.per{color:var(--acc);font-weight:bold;cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-decoration-thickness:1px;text-underline-offset:3px}
+  a.per::after{content:" ›";text-decoration:none;display:inline-block;margin-left:2px}
+  a.per:hover,a.per:focus-visible{text-decoration-style:solid}
+  .caja .m{color:var(--mut);font-size:.85rem;display:block}
+  .caja.priv,.caja.vacio{color:var(--priv);font-style:italic;background:transparent;border-style:dashed}
+  .foco{border:2px solid var(--acc);background:var(--accbg);padding:14px 16px}
+  .foco h2{margin:0 0 6px;font-size:1.25rem}
+  .foco dl{display:grid;grid-template-columns:max-content 1fr;gap:2px 12px;margin:0;font-size:.95rem}
+  .foco dt{color:var(--mut)}.foco dd{margin:0}
+  .union{margin-top:8px}
+  .union h3{margin:0 0 6px;font-size:.95rem;font-weight:normal;color:var(--mut)}
+  .union .sin{color:var(--priv);font-style:italic;font-size:.9rem;margin:0 0 4px}
+  .hijos{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+  .linea{width:2px;height:14px;background:var(--line);margin:0 auto}
+  /* Comentarios */
+  .coment{margin-top:26px;border:1px solid var(--line);border-radius:8px;background:var(--card);padding:14px 16px}
+  .coment h3{margin:0 0 4px;font-size:1.05rem}
+  .coment p.m{margin:0 0 10px;color:var(--mut);font-size:.9rem}
+  .coment .dos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+  .coment .acc{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:10px}
+  .coment .res-env{font-size:.9rem}
+  .coment .res-env.ok{color:var(--ok)}.coment .res-env.err{color:var(--err)}
+  .trampa{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+  footer{margin-top:30px;color:var(--mut);font-size:.8rem}
+  @media (max-width:600px){form#f{grid-template-columns:1fr}.padres{grid-template-columns:1fr}.coment .dos{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Buscador de antepasados</h1>
+  <p class="sub">Escribe el nombre y los apellidos de la persona que buscas. Si está en el árbol, verás a sus padres arriba y a sus hijos debajo. Pulsa en cualquier nombre para ver su ficha.</p>
+
+  <form id="f" autocomplete="off">
+    <label>Nombre de pila<input type="text" id="q-nom" placeholder="p. ej. José Antonio"></label>
+    <label>Primer apellido<input type="text" id="q-ap1" placeholder="p. ej. Berbel"></label>
+    <label>Segundo apellido<input type="text" id="q-ap2" placeholder="(opcional)"></label>
+    <div class="row2">
+      <button type="submit">Buscar</button>
+      <button type="button" class="sec" id="limpiar">Limpiar</button>
+      <label class="chk"><input type="checkbox" id="variantes" checked> Incluir variantes del apellido (Berbel, Belber, Belver…)</label>
+    </div>
+  </form>
+
+  <p id="estado" role="status">Cargando datos…</p>
+  <ul id="lista" class="res" hidden></ul>
+  <nav id="rastro" aria-label="Tu recorrido por el árbol" hidden></nav>
+  <div id="ficha" class="arbol"></div>
+
+  <footer id="pie"></footer>
+</div>
+
+<!--DATOS_INCRUSTADOS-->
+<script>
+/* ===== Configuración ===== */
+const DATA_URL = 'datos.json';           // ruta del archivo generado por convertir_gedcom.py
+const MAX_RESULTADOS = 200;
+// Comentarios: se envían por correo a través de FormSubmit (https://formsubmit.co).
+// Pon aquí tu correo o, mejor, el código aleatorio que FormSubmit te da tras activar el formulario.
+// Si se deja vacío, el recuadro de comentarios no aparece.
+const COMENTARIOS_DESTINO = '';
+// Grupos de variantes ortográficas: cualquier forma de un grupo equivale a las demás.
+const GRUPOS_VARIANTES = [
+  ['berbel','bervel','belber','belbel','velbel','velber','verbal','belver','bellver','velver','berben','berbell'],
+];
+
+/* ===== Utilidades de texto ===== */
+const PARTICULAS = new Set(['de','del','la','las','los','y','e','da','di','san','santa','van','von']);
+const norm = s => (s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[()]/g,' ').replace(/\s+/g,' ').trim();
+const mapaVar = new Map();
+GRUPOS_VARIANTES.forEach(g => g.forEach(v => mapaVar.set(v, g[0])));
+const canon = (t, usar) => usar ? (mapaVar.get(t) || t) : t;
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// Divide "Gómez Salmerón" / "Regonaschi de Lima" / "de los Ríos Pérez" en [apellido1, apellido2…]
+function gruposApellido(s){
+  const toks = norm(s).split(' ').filter(Boolean), out = []; let acc = [];
+  toks.forEach(t => { acc.push(t); if(!PARTICULAS.has(t)){ out.push(acc.filter(x=>!PARTICULAS.has(x)).join(' ')); acc = []; } });
+  return out;
+}
+
+/* ===== Datos ===== */
+let D = null, IDX = [];
+async function cargar(){
+  let datos;
+  if (window.DATOS_GZ_B64){
+    const bin = Uint8Array.from(atob(window.DATOS_GZ_B64), c => c.charCodeAt(0));
+    const s = new Response(new Blob([bin]).stream().pipeThrough(new DecompressionStream('gzip')));
+    datos = await s.json();
+  } else {
+    const r = await fetch(DATA_URL); if(!r.ok) throw new Error('HTTP '+r.status);
+    datos = await r.json();
+  }
+  D = datos;
+  for (const [id, p] of Object.entries(D.p)){
+    if (p[0] === null) continue;                      // privadas: no se buscan
+    const nombres = [p[0], ...(p[11]||[])].map(x => norm(x).split(' ').filter(t=>t && !PARTICULAS.has(t)));
+    IDX.push({id:+id, nombres, g: gruposApellido(p[1]), año: (p[3].match(/\d{4}/)||[''])[0] || (p[5].match(/\d{4}/)||[''])[0] || (p[6].match(/\d{4}/)||[''])[0]});
+  }
+  document.getElementById('pie').textContent = `Datos actualizados el ${D.actualizado}. Las personas que pueden estar vivas no se muestran.`;
+}
+
+/* ===== Búsqueda ===== */
+function buscar(nom, ap1, ap2, variantes){
+  const qn = norm(nom).split(' ').filter(t=>t && !PARTICULAS.has(t));
+  const q1 = norm(ap1).split(' ').filter(t=>t && !PARTICULAS.has(t)).map(t=>canon(t,variantes)).join(' ');
+  const q2 = norm(ap2).split(' ').filter(t=>t && !PARTICULAS.has(t)).map(t=>canon(t,variantes)).join(' ');
+  const out = [];
+  for (const x of IDX){
+    let score = 0;
+    if (qn.length){
+      const ok = x.nombres.some(ns => qn.every(q => ns.some(t => t.startsWith(q))));
+      if(!ok) continue;
+      score += x.nombres.some(ns => qn.every((q,i)=> ns[i]===q)) ? 2 : 1;
+    }
+    if (q1){
+      const a1 = canon(x.g[0]||'', variantes);
+      if (a1 !== q1) { if(!a1.startsWith(q1)) continue; } else score += 3;
+    }
+    if (q2){
+      const a2 = x.g.slice(1).map(g=>canon(g,variantes)).join(' ');
+      if (!a2.startsWith(q2) && !x.g.slice(1).some(g=>canon(g,variantes).startsWith(q2))) continue;
+      score += 2;
+    }
+    score -= 0.01 * Math.min(...x.nombres.map(n=>n.length));
+    out.push([score, x]);
+  }
+  out.sort((a,b)=> b[0]-a[0] || (a[1].año||'9999').localeCompare(b[1].año||'9999'));
+  return out.map(o=>o[1].id);
+}
+
+/* ===== Presentación ===== */
+const P = id => D.p[id];
+const nombreCompleto = p => `${p[0]} ${p[1]}`.trim();
+function años(p){
+  const y = s => (s.match(/\d{4}/)||[''])[0];
+  const n = y(p[3]) || y(p[5]), d = y(p[6]);
+  if (!n && !d) return '';
+  return p[6] ? `${n||'?'} – ${d||'†'}` : n;
+}
+function resumen(p){ return [años(p), p[4]].filter(Boolean).join(' · '); }
+const enlace = (id, texto) => `<a class="per" data-id="${id}" href="#p${id}" title="Ver la ficha de ${esc(texto)}">${esc(texto)}</a>`;
+
+function caja(id, rol, extra=''){
+  if (id == null) return `<div class="caja vacio">${rol}: sin datos</div>`;
+  const p = P(id);
+  if (p[0] === null) return `<div class="caja priv">${rol}: persona privada</div>`;
+  const m = [resumen(p), extra].filter(Boolean).join(' · ');
+  return `<div class="caja">${enlace(id, nombreCompleto(p))}<span class="m">${esc(m)}</span></div>`;
+}
+
+// Hermanos (mismos padres) y medio hermanos (un solo progenitor en común), ordenados por año.
+function hermanos(id){
+  const p = P(id); if (p[9] == null) return [];
+  const fam = D.f[p[9]], vistos = new Set([id]), out = [];
+  fam[4].forEach(c => { if(!vistos.has(c)){ vistos.add(c); out.push([c, '']); } });
+  [fam[0], fam[1]].forEach(pr => {
+    if (pr == null) return;
+    P(pr)[10].forEach(fid => {
+      if (fid === p[9]) return;
+      D.f[fid][4].forEach(c => { if(!vistos.has(c)){ vistos.add(c); out.push([c, 'medio hermano/a']); } });
+    });
+  });
+  const año = c => { const q = P(c); return q[0]===null ? '9999' : ((q[3]+q[5]).match(/\d{4}/)||['9999'])[0]; };
+  return out.sort((a,b)=> año(a[0]).localeCompare(año(b[0])));
+}
+
+function mostrarFicha(id){
+  const p = P(id); const el = document.getElementById('ficha');
+  if (!p || p[0] === null){ el.innerHTML = ''; return false; }
+  const fam = p[9] != null ? D.f[p[9]] : null;
+  const padre = fam ? fam[0] : null, madre = fam ? fam[1] : null;
+
+  let h = '<div class="nivel">Padres</div><div class="padres">' + caja(padre,'Padre') + caja(madre,'Madre') + '</div><div class="linea"></div>';
+
+  const datos = [];
+  if (p[3] || p[4]) datos.push(['Nacimiento', [p[3], p[4]].filter(Boolean).join(' — ')]);
+  if (p[5]) datos.push(['Bautismo', p[5]]);
+  if (p[6]) datos.push(['Defunción', p[6] === 'sí' ? 'fallecido/a' : [p[6], p[7]].filter(Boolean).join(' — ')]);
+  if (p[8]) datos.push(['Oficio', p[8]]);
+  h += `<div class="caja foco"><h2>${esc(nombreCompleto(p))}</h2>` +
+       (datos.length ? '<dl>' + datos.map(([k,v])=>`<dt>${k}</dt><dd>${esc(v)}</dd>`).join('') + '</dl>' : '<span class="m">Sin más datos registrados.</span>') + '</div>';
+
+  // Hermanos
+  const hs = hermanos(id);
+  if (hs.length){
+    const pub = hs.filter(([c]) => P(c)[0] !== null), npriv = hs.length - pub.length;
+    h += `<div class="nivel">Hermanos (${hs.length})</div><div class="hijos">` + pub.map(([c,et]) => caja(c,'Hermano/a',et)).join('') +
+         (npriv ? `<div class="caja priv">${npriv === 1 ? '1 hermano/a privado/a' : npriv + ' hermanos/as privados/as'}</div>` : '') + '</div>';
+  }
+
+  // Parejas e hijos (incluye parejas sin hijos registrados)
+  const uniones = p[10].map(fid => D.f[fid]).filter(Boolean);
+  const total = uniones.reduce((n,f)=>n+f[4].length,0);
+  h += '<div class="linea"></div><div class="nivel">' + (uniones.length > 1 ? 'Parejas' : 'Pareja') + ' e hijos' + (total ? ` (${total} hijo${total>1?'s':''})` : '') + '</div>';
+  if (!uniones.length) h += '<div class="caja vacio">No constan pareja ni hijos en el árbol.</div>';
+  uniones.forEach(f => {
+    const otro = f[0] === id ? f[1] : f[0];
+    let cab;
+    if (otro != null){
+      const po = P(otro);
+      const nom = po[0] === null ? 'persona privada' : enlace(otro, nombreCompleto(po));
+      const boda = [f[2], f[3] ? 'en ' + f[3] : ''].filter(Boolean).join(' ');
+      cab = `<h3>Con ${nom}${boda ? ' (casados ' + esc(boda) + ')' : ''}</h3>`;
+    } else cab = '<h3>Con pareja desconocida</h3>';
+    h += `<div class="union">${cab}` + (f[4].length
+      ? '<div class="hijos">' + f[4].map(c => caja(c, 'Hijo/a')).join('') + '</div>'
+      : '<p class="sin">No constan hijos de esta unión.</p>') + '</div>';
+  });
+
+  if (COMENTARIOS_DESTINO) h += formularioComentario(id, p);
+  el.innerHTML = h;
+  return true;
+}
+
+/* ===== Comentarios ===== */
+function formularioComentario(id, p){
+  return `<form class="coment" data-pid="${id}">
+    <h3>¿Sabes algo más de ${esc(nombreCompleto(p))}?</h3>
+    <p class="m">Si tienes datos, documentos, fotos o una corrección sobre esta persona, escríbelo aquí. El mensaje llega directamente al autor de familiaberbel.org y no se publica.</p>
+    <div class="dos">
+      <label>Tu nombre<input type="text" name="nombre" maxlength="100" required></label>
+      <label>Tu correo (para poder responderte)<input type="email" name="email" maxlength="150" required></label>
+    </div>
+    <label>Comentario<textarea name="comentario" maxlength="5000" required placeholder="p. ej. Era mi bisabuela; tengo su partida de bautismo de Íllora…"></textarea></label>
+    <label class="trampa" aria-hidden="true">No rellenar<input type="text" name="_honey" tabindex="-1" autocomplete="off"></label>
+    <div class="acc"><button type="submit">Enviar comentario</button><span class="res-env" role="status"></span></div>
+  </form>`;
+}
+
+async function enviarComentario(form){
+  const id = +form.dataset.pid, p = P(id), res = form.querySelector('.res-env'), btn = form.querySelector('button');
+  const fd = new FormData(form);
+  if (fd.get('_honey')) return;                    // robot
+  const persona = nombreCompleto(p), ficha = location.origin + location.pathname + '#p' + id;
+  const cuerpo = {
+    _subject: `Comentario sobre ${persona} — Buscador familiaberbel.org`,
+    _template: 'table',
+    _replyto: fd.get('email'),
+    'Persona': `${persona}${años(p) ? ' (' + años(p) + ')' : ''}`,
+    'Ficha': ficha,
+    'Nombre del visitante': fd.get('nombre'),
+    'Correo del visitante': fd.get('email'),
+    'Comentario': fd.get('comentario'),
+  };
+  btn.disabled = true; res.className = 'res-env'; res.textContent = 'Enviando…';
+  try {
+    const r = await fetch('https://formsubmit.co/ajax/' + encodeURIComponent(COMENTARIOS_DESTINO), {
+      method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body: JSON.stringify(cuerpo)});
+    const j = await r.json().catch(()=>({}));
+    if (!r.ok || String(j.success) === 'false') throw new Error(j.message || 'HTTP ' + r.status);
+    form.reset(); res.className = 'res-env ok'; res.textContent = '¡Gracias! Tu comentario se ha enviado.';
+  } catch(err){
+    res.className = 'res-env err'; res.textContent = 'No se ha podido enviar (' + err.message + '). Inténtalo más tarde.';
+  } finally { btn.disabled = false; }
+}
+
+/* ===== Navegación, recorrido e historial ===== */
+let rastro = [];                                    // ids visitados desde la última búsqueda
+
+function pintarRastro(){
+  const nav = document.getElementById('rastro');
+  if (!rastro.length){ nav.hidden = true; nav.innerHTML = ''; return; }
+  const partes = rastro.map((id, i) => {
+    const n = esc(nombreCompleto(P(id)));
+    return i === rastro.length-1 ? `<span class="act" aria-current="page">${n}</span>` : `<a data-id="${id}" data-rastro="${i}" href="#p${id}">${n}</a>`;
+  });
+  nav.innerHTML = '<strong>Tu recorrido:</strong> ' + partes.join('<span class="sep">›</span>') +
+    (rastro.length === 1 ? '<div class="aviso">Pulsa en el nombre de cualquier familiar para ver su ficha sin tener que buscarlo.</div>' : '');
+  nav.hidden = false;
+}
+
+function pintar(id){
+  if (!mostrarFicha(id)) { rastro = []; pintarRastro(); return; }
+  pintarRastro();
+  document.getElementById('rastro').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// nuevo=true: empieza un recorrido (viene de la búsqueda). Si no, se añade al recorrido actual.
+function irA(id, nuevo=false){
+  document.getElementById('estado').textContent='';
+  if (nuevo) rastro = [id];
+  else {
+    const i = rastro.indexOf(id);
+    rastro = i >= 0 ? rastro.slice(0, i+1) : [...rastro, id];
+  }
+  history.pushState({id, rastro}, '', '#p'+id);
+  pintar(id);
+}
+
+window.addEventListener('popstate', e => {
+  if (!D) return;
+  const st = e.state, m = location.hash.match(/^#p(\d+)$/);
+  const lista = document.getElementById('lista');
+  if (st && st.id != null){
+    rastro = st.rastro || [st.id]; lista.hidden = true; pintar(st.id);
+  } else if (m){
+    rastro = [+m[1]]; lista.hidden = true; pintar(+m[1]);
+  } else {
+    // antes de la primera ficha: se vuelve a la lista de resultados, si la había
+    rastro = []; pintarRastro(); document.getElementById('ficha').innerHTML = '';
+    if (lista.innerHTML) lista.hidden = false;
+  }
+});
+
+function ejecutar(){
+  const v = k => document.getElementById(k).value;
+  const nom=v('q-nom'), a1=v('q-ap1'), a2=v('q-ap2'), est=document.getElementById('estado'), lista=document.getElementById('lista');
+  document.getElementById('ficha').innerHTML = ''; rastro = []; pintarRastro(); lista.innerHTML = '';
+  if (location.hash) history.pushState(null,'',location.pathname+location.search);
+  if (!norm(nom) && !norm(a1) && !norm(a2)){ est.textContent='Escribe al menos un nombre o un apellido.'; lista.hidden=true; return; }
+  const ids = buscar(nom,a1,a2,document.getElementById('variantes').checked);
+  if (!ids.length){
+    est.textContent='No se ha encontrado a nadie con esos datos. Prueba con menos datos (solo el primer apellido) o con otra grafía. Si la persona vivió hace menos de unos 110 años y no consta su defunción, no se muestra.';
+    lista.hidden=true; return;
+  }
+  if (ids.length === 1){ lista.hidden=true; irA(ids[0], true); est.textContent='1 resultado'; return; }
+  const mostrar = ids.slice(0, MAX_RESULTADOS);
+  est.textContent = ids.length > MAX_RESULTADOS ? `${ids.length} resultados; se muestran los ${MAX_RESULTADOS} primeros. Añade más datos para afinar.` : `${ids.length} resultados. Elige uno:`;
+  lista.innerHTML = mostrar.map(id => { const p=P(id); return `<li><button type="button" data-id="${id}"><span class="n">${esc(nombreCompleto(p))}</span><span class="m">${esc(resumen(p)) || 'sin fechas'}</span></button></li>`; }).join('');
+  lista.hidden = false;
+}
+
+document.getElementById('f').addEventListener('submit', e => { e.preventDefault(); if(D) ejecutar(); });
+document.getElementById('limpiar').addEventListener('click', () => {
+  ['q-nom','q-ap1','q-ap2'].forEach(k=>document.getElementById(k).value='');
+  const lista = document.getElementById('lista'); lista.hidden=true; lista.innerHTML='';
+  document.getElementById('ficha').innerHTML=''; rastro=[]; pintarRastro();
+  document.getElementById('estado').textContent=''; history.replaceState(null,'',location.pathname+location.search);
+});
+document.addEventListener('submit', e => {
+  const form = e.target.closest('form.coment'); if(!form) return;
+  e.preventDefault(); enviarComentario(form);
+});
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-id]'); if(!t || !D) return;
+  if (e.ctrlKey || e.metaKey || e.shiftKey || e.button === 1) return;   // abrir en otra pestaña: comportamiento normal
+  e.preventDefault();
+  const id = +t.dataset.id;
+  if (t.closest('#lista')){ document.getElementById('lista').hidden = true; irA(id, true); }
+  else irA(id);
+});
+
+cargar().then(() => {
+  document.getElementById('estado').textContent = '';
+  const m = location.hash.match(/^#p(\d+)$/);
+  if (m){ rastro = [+m[1]]; history.replaceState({id:+m[1], rastro}, '', location.hash); pintar(+m[1]); }
+}).catch(err => {
+  document.getElementById('estado').textContent = 'No se han podido cargar los datos (' + err.message + ').';
+});
+</script>
+</body>
+</html>
