@@ -16,9 +16,10 @@ script no existe en la web, aunque alguien descargue y descomprima los datos):
   estado 1 · PROTEGIDA viva o posiblemente viva y mayor de edad. Solo se publica
                        su NOMBRE y sus vínculos familiares. Ni sexo, ni fechas, ni
                        lugares, ni oficio, ni otros nombres, ni datos de boda.
-  estado 2 · MENOR     viva o posiblemente viva y menor de EDAD_ADULTA años, o sin
-                       datos suficientes para saber que es adulta. Solo consta que
-                       existe (y en qué familia): sin nombre ni ningún otro dato.
+  estado 2 · MENOR     viva o posiblemente viva y, según su año de nacimiento o
+                       bautismo, menor de EDAD_ADULTA años. Solo consta que existe
+                       (y en qué familia): sin nombre ni ningún otro dato.
+                       Quien no tiene fecha se trata como PROTEGIDA (solo nombre).
   estado 3 · EXCLUIDA  persona que ha pedido no aparecer (archivo de exclusiones).
                        Igual que un menor: sin nombre ni ningún otro dato.
 
@@ -34,9 +35,6 @@ from pathlib import Path
 
 AÑOS_PRIVADO = 110          # sin defunción: se considera posiblemente viva si nació hace menos de estos años
 EDAD_ADULTA = 18            # por debajo de esta edad (o si no se puede saber), se oculta todo
-# Para deducir que alguien sin fecha de nacimiento es adulto a partir de sus padres:
-# si la madre nació hace más de 18+55 años o el padre hace más de 18+70, el hijo es mayor de edad.
-MARGEN_MADRE, MARGEN_PADRE = 55, 70
 
 MESES = {"JAN": "ene", "FEB": "feb", "MAR": "mar", "APR": "abr", "MAY": "may", "JUN": "jun",
          "JUL": "jul", "AUG": "ago", "SEP": "sep", "OCT": "oct", "NOV": "nov", "DEC": "dic"}
@@ -172,21 +170,9 @@ def main():
 
     # ---- Clasificación de privacidad ----
     def es_adulta(p):
-        if p["ref"] is not None:
-            return hoy - p["ref"] >= EDAD_ADULTA
-        # Sin año de nacimiento: adulta si tiene hijos, o si un progenitor es lo bastante mayor.
-        if any(familias.get(f, {}).get("ch") for f in p["fams"]):
-            return True
-        fam = familias.get(p["famc"])
-        if fam:
-            madre, padre = personas.get(fam["w"]), personas.get(fam["h"])
-            if madre and madre["ref"] is not None and hoy - madre["ref"] >= EDAD_ADULTA + MARGEN_MADRE:
-                return True
-            if padre and padre["ref"] is not None and hoy - padre["ref"] >= EDAD_ADULTA + MARGEN_PADRE:
-                return True
-            if (madre and madre["dead"] and madre["ref"] and hoy - madre["ref"] >= EDAD_ADULTA + MARGEN_MADRE):
-                return True
-        return False                                   # en la duda, se protege como menor
+        # Solo se oculta como menor a quien tiene un año de nacimiento/bautismo que lo confirma.
+        # Sin fecha, se muestra solo con su nombre (decisión del 18/11/2026).
+        return p["ref"] is None or hoy - p["ref"] >= EDAD_ADULTA
 
     for x, p in personas.items():
         if x in excl_ids or clave(f'{p["dado"]} {p["apell"]}') in excl_nombres:
