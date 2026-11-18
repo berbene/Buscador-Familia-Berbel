@@ -196,6 +196,21 @@ const MAX_RESULTADOS = 200;
 // Pon aquí tu correo o, mejor, el código aleatorio que FormSubmit te da tras activar el formulario.
 // Si se deja vacío, el recuadro de comentarios no aparece.
 const COMENTARIOS_DESTINO = 'n.berbel.c@gmail.com';
+// Registro anónimo de actividad (formulario de Google de Néstor; las respuestas van a una hoja de su Drive).
+// Solo se envía el tipo de acción, lo buscado o la ficha abierta, el número de resultados y la procedencia.
+// Nada que identifique al visitante: ni IP, ni cookies, ni identificadores. Si se deja vacío, no se registra nada.
+const REGISTRO = {
+  url: 'https://docs.google.com/forms/d/e/1FAIpQLSdW1cQWRKXvJQs_Gao7BJ_pKf_Peb9Z9AOFFjI9bCr28ErpPA/formResponse',
+  tipo: 'entry.841641286', detalle: 'entry.934626017', resultados: 'entry.1421759375', pagina: 'entry.1656308667',
+};
+function registrar(tipo, detalle='', resultados='', pagina=''){
+  if (!REGISTRO.url) return;
+  try {
+    const datos = new URLSearchParams({[REGISTRO.tipo]: tipo, [REGISTRO.detalle]: String(detalle).slice(0, 300),
+      [REGISTRO.resultados]: String(resultados), [REGISTRO.pagina]: String(pagina).slice(0, 200)});
+    fetch(REGISTRO.url, {method:'POST', mode:'no-cors', body: datos, keepalive: true}).catch(()=>{});
+  } catch(e){}
+}
 // Página con el aviso legal y la política de privacidad.
 const URL_PRIVACIDAD = 'https://familiaberbel.org/privacidad/';
 // Estados de privacidad (campo 12 de cada persona; los genera convertir_gedcom.py)
@@ -441,6 +456,8 @@ async function enviarFormSubmit(form, cuerpo, okMsg){
       method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body: JSON.stringify(cuerpo)});
     const j = await r.json().catch(()=>({}));
     if (!r.ok || String(j.success) === 'false') throw new Error(j.message || 'HTTP ' + r.status);
+    registrar(form.id === 'pista' ? 'formulario no encontrado' : 'comentario en ficha',
+              form.id === 'pista' ? (cuerpo['Persona buscada'] || '') : (cuerpo['Persona'] || ''), '', form.dataset.pid ? '#p' + form.dataset.pid : '');
     form.reset(); res.className = 'res-env ok'; res.textContent = okMsg;
   } catch(err){
     res.className = 'res-env err'; res.textContent = 'No se ha podido enviar (' + err.message + '). Inténtalo más tarde.';
@@ -509,8 +526,13 @@ function pintarRastro(){
   nav.hidden = false;
 }
 
+let ultimaFicha = null;
 function pintar(id){
   if (!mostrarFicha(id)) { rastro = []; pintarRastro(); return; }
+  if (id !== ultimaFicha){
+    ultimaFicha = id; const p = P(id);
+    registrar('ficha', nombreCompleto(p), estado(p) === PROTEGIDA ? 'persona viva' : 'fallecida', '#p' + id);
+  }
   pintarRastro();
   document.getElementById('rastro').scrollIntoView({behavior:'smooth', block:'start'});
 }
@@ -549,6 +571,7 @@ function ejecutar(){
   if (location.hash) history.pushState(null,'',location.pathname+location.search);
   if (!norm(nom) && !norm(a1) && !norm(a2)){ est.textContent='Escribe al menos un nombre o un apellido.'; lista.hidden=true; return; }
   const ids = buscar(nom,a1,a2,document.getElementById('variantes').checked);
+  registrar(ids.length ? 'búsqueda' : 'búsqueda sin resultados', [nom, a1, a2].map(x=>x.trim()).join(' | '), ids.length);
   if (!ids.length){
     est.innerHTML='No se ha encontrado a nadie con esos datos. Prueba con menos datos (solo el primer apellido) o con otra grafía. Si sigues sin encontrarlo, <a href="#pista" class="a-pista">cuéntame lo que sabes de esa persona</a> para incluirla en futuras investigaciones.';
     lista.hidden=true; destacarPista([nom, a1, a2].map(x=>x.trim()).filter(Boolean).join(' ')); return;
@@ -602,6 +625,9 @@ if (COMENTARIOS_DESTINO){
 
 cargar().then(() => {
   document.getElementById('estado').textContent = '';
+  let origen = 'directo';
+  try { if (document.referrer) origen = new URL(document.referrer).hostname || 'directo'; } catch(e){}
+  registrar('visita', origen, '', location.hash || 'inicio');
   const m = location.hash.match(/^#p(\d+)$/);
   if (m){ rastro = [+m[1]]; history.replaceState({id:+m[1], rastro}, '', location.hash); pintar(+m[1]); }
 }).catch(err => {
