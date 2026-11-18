@@ -11,7 +11,9 @@ Solo usa la biblioteca estándar de Python 3.8+.
 PRIVACIDAD (todo se aplica AQUÍ, antes de publicar: lo que no sale de este
 script no existe en la web, aunque alguien descargue y descomprima los datos):
 
-  estado 0 · PÚBLICA   consta su defunción o nació hace más de AÑOS_PRIVADO años.
+  estado 0 · PÚBLICA   consta su defunción o nació hace más de AÑOS_PRIVADO años. Si no tiene
+                       fecha propia, se deduce de sus acontecimientos y de las fechas de
+                       padres, hijos, hermanos y cónyuges (ver deducir_nacimiento).
                        Se publican nombre, fechas, lugares y oficio.
   estado 1 · PROTEGIDA viva o posiblemente viva y mayor de edad. Solo se publica
                        su NOMBRE y sus vínculos familiares. Ni sexo, ni fechas, ni
@@ -38,6 +40,12 @@ import argparse, base64, datetime, gzip, json, re, sys, unicodedata
 from pathlib import Path
 
 AÑOS_PRIVADO = 110          # sin defunción: se considera posiblemente viva si nació hace menos de estos años
+# Deducción de fallecidos sin fechas propias, a partir de familiares y acontecimientos
+# (márgenes amplios a propósito, para no publicar nunca por error a alguien vivo):
+DIF_MADRE, DIF_PADRE = 55, 75   # un hijo nace como mucho 55 años después que su madre / 75 después que su padre
+DIF_HIJO = 12                   # un progenitor nace al menos 12 años antes que su hijo, y se casa con 12 años o más
+DIF_HERMANOS = 30               # hermanos de los mismos padres: como mucho 30 años de diferencia
+DIF_CONYUGES = 50               # cónyuges: como mucho 50 años de diferencia
 EDAD_ADULTA = 18            # por debajo de esta edad (o si no se puede saber), se oculta todo
 
 MESES = {"JAN": "ene", "FEB": "feb", "MAR": "mar", "APR": "abr", "MAY": "may", "JUN": "jun",
@@ -232,6 +240,70 @@ def ficha_general(L, limpiar):
                     imagenes.append(re.sub(r"^http://", "https://", v2))
     return notas, fuentes, imagenes
 
+def año_max(fecha):
+    """Año más tardío posible de una fecha GEDCOM (None si no se puede acotar, p. ej. 'AFT 1900')."""
+    f = (fecha or "").strip().upper()
+    if not f or f.startswith("AFT"):
+        return None
+    años = [int(y) for y in re.findall(r"\b(\d{4})\b", f)]
+    if not años:
+        return None
+    return max(años) + (5 if re.match(r"(ABT|EST|CAL)\b", f) else 0)
+
+def deducir_nacimiento(personas, familias):
+    """Año de nacimiento más tardío posible de cada persona SIN fecha propia de nacimiento o bautismo,
+    deducido de sus acontecimientos con fecha y de las fechas de padres, hijos, hermanos y cónyuges.
+    Se propaga por todo el árbol hasta que no cambia nada."""
+    T = {}
+    for x, p in personas.items():
+        if p["ref"] is not None:
+            continue                                  # tiene fecha propia: no se deduce nada
+        cotas = [año_max(v2) for i, (n, t, v) in enumerate(p["L"]) if n == 1
+                 for n2, t2, v2 in hijos_de(p["L"], i) if n2 == 2 and t2 == "DATE"]
+        cotas = [c for c in cotas if c]
+        if cotas:
+            T[x] = min(cotas)
+    def fijada(x):                                    # cota conocida: fecha propia o deducida
+        p = personas.get(x)
+        if p is None:
+            return None
+        if p["ref"] is not None:
+            return año_max(p["nac"]) or año_max(p["bap"])
+        return T.get(x)
+    def bajar(x, v):
+        if x is None or v is None or x not in personas or personas[x]["ref"] is not None:
+            return False
+        if T.get(x) is None or v < T[x]:
+            T[x] = v; return True
+        return False
+    for f in familias.values():                       # boda con fecha: los cónyuges nacieron 12 años antes
+        bodas = [año_max(v2) for i, (n, t, v) in enumerate(f["L"]) if n == 1 and t in ("MARR", "ENGA", "MARB", "MARL", "MARC")
+                 for n2, t2, v2 in hijos_de(f["L"], i) if t2 == "DATE"]
+        bodas = [b for b in bodas if b]
+        if bodas:
+            bajar(f["h"], min(bodas) - DIF_HIJO); bajar(f["w"], min(bodas) - DIF_HIJO)
+    for _ in range(60):
+        cambio = False
+        for f in familias.values():
+            h, w, hijos = f["h"], f["w"], [c for c in f["ch"] if c in personas]
+            for c in hijos:
+                tc = fijada(c)
+                if tc is not None:
+                    cambio |= bajar(h, tc - DIF_HIJO); cambio |= bajar(w, tc - DIF_HIJO)
+            tw, th = fijada(w), fijada(h)
+            for c in hijos:
+                if tw is not None: cambio |= bajar(c, tw + DIF_MADRE)
+                if th is not None: cambio |= bajar(c, th + DIF_PADRE)
+            th_ = [fijada(c) for c in hijos]; th_ = [t for t in th_ if t is not None]
+            if th_:
+                for c in hijos:
+                    cambio |= bajar(c, min(th_) + DIF_HERMANOS)
+            if th is not None: cambio |= bajar(w, th + DIF_CONYUGES)
+            if tw is not None: cambio |= bajar(h, tw + DIF_CONYUGES)
+        if not cambio:
+            break
+    return T
+
 def clave(s):
     s = unicodedata.normalize("NFD", s or "")
     s = "".join(c for c in s if not unicodedata.combining(c))
@@ -302,11 +374,15 @@ def main():
         # Sin fecha, se muestra solo con su nombre (decisión del 18/11/2026).
         return p["ref"] is None or hoy - p["ref"] >= EDAD_ADULTA
 
+    deducido = deducir_nacimiento(personas, familias)
+    por_deduccion = 0
     for x, p in personas.items():
         if x in excl_ids or clave(f'{p["dado"]} {p["apell"]}') in excl_nombres:
             p["estado"] = EXCLUIDA
         elif p["dead"] or (p["ref"] is not None and hoy - p["ref"] > AÑOS_PRIVADO):
             p["estado"] = PUBLICA
+        elif p["ref"] is None and deducido.get(x) is not None and hoy - deducido[x] > AÑOS_PRIVADO:
+            p["estado"] = PUBLICA; por_deduccion += 1
         elif es_adulta(p):
             p["estado"] = PROTEGIDA
         else:
@@ -368,6 +444,8 @@ def main():
     Path(a.salida).write_text(out, encoding="utf-8")
     print(f"{len(P)} personas: {cuenta[PUBLICA]} públicas, {cuenta[PROTEGIDA]} vivas solo con nombre, "
           f"{cuenta[MENOR]} menores ocultos, {cuenta[EXCLUIDA]} excluidas a petición; {len(F)} familias")
+    print(f"Públicas por deducción (sin fechas propias, pero sus familiares o acontecimientos muestran "
+          f"que nacieron hace más de {AÑOS_PRIVADO} años): {por_deduccion}")
     print(f"Limpieza de textos: {limpiar.contactos} textos con datos de contacto retirados, "
           f"{limpiar.nombres} con nombres de personas ocultas sustituidos")
     if excl_ids or excl_nombres:
