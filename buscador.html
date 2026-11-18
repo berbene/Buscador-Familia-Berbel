@@ -69,6 +69,28 @@
   .coment .acc{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:10px}
   .coment .res-env{font-size:.9rem}
   .coment .res-env.ok{color:var(--ok)}.coment .res-env.err{color:var(--err)}
+  /* Ficha completa */
+  .ficha-ev{margin:10px 0 0;padding:0;list-style:none;font-size:.95rem}
+  .ficha-ev>li{padding:6px 0;border-top:1px solid var(--line)}
+  .ficha-ev>li:first-child{border-top:0}
+  .ficha-ev .k{color:var(--mut);font-size:.82rem;text-transform:uppercase;letter-spacing:.04em;display:block}
+  .ficha-ev .det,.bloque .det{margin:3px 0 0 0;color:var(--ink);font-size:.9rem;white-space:pre-wrap}
+  .ficha-ev .fte,.bloque .fte{margin:2px 0 0;color:var(--mut);font-size:.82rem;white-space:pre-wrap;word-break:break-word}
+  .bloque{margin-top:14px;border:1px solid var(--line);border-radius:8px;background:var(--card);padding:12px 14px}
+  .bloque h3{margin:0 0 6px;font-size:1rem}
+  .bloque .nota-txt{white-space:pre-wrap;margin:0 0 10px;font-size:.95rem;line-height:1.55;word-break:break-word}
+  .bloque ol{margin:0;padding-left:20px;font-size:.88rem;color:var(--mut)}
+  .bloque ol li{margin:2px 0;word-break:break-word;white-space:pre-wrap}
+  .bloque a,.ficha-ev a{color:var(--acc)}
+  details>summary{cursor:pointer;color:var(--acc);font-size:.9rem;margin-top:4px}
+  .imgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+  .imgs a{display:block;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--bg)}
+  .imgs img{display:block;width:100%;height:140px;object-fit:cover}
+  .boda{margin:0 0 8px;padding:8px 12px;border-left:3px solid var(--line);font-size:.9rem}
+  .boda summary{margin:0}
+  .boda .det{white-space:pre-wrap;margin:3px 0 0;font-size:.9rem}
+  .boda .fte{margin:2px 0 0;color:var(--mut);font-size:.82rem;white-space:pre-wrap;word-break:break-word}
+  .retirado{color:var(--priv);font-style:italic}
   .trampa{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
   footer{margin-top:30px;color:var(--mut);font-size:.8rem}
   @media (max-width:600px){form#f{grid-template-columns:1fr}.padres{grid-template-columns:1fr}.coment .dos{grid-template-columns:1fr}}
@@ -196,6 +218,33 @@ function años(p){
 function resumen(p){ return [años(p), p[4]].filter(Boolean).join(' · '); }
 const enlace = (id, texto) => `<a class="per" data-id="${id}" href="#p${id}" title="Ver la ficha de ${esc(texto)}">${esc(texto)}</a>`;
 
+// Texto con enlaces clicables y los datos retirados en gris.
+function texto(s){
+  return esc(s)
+    .replace(/https?:\/\/[^\s<>"']+[^\s<>"'.,;:)\]]/g, u => `<a href="${u}" target="_blank" rel="noopener nofollow">${u.length > 70 ? u.slice(0, 67) + '…' : u}</a>`)
+    .replace(/\[(dato de contacto retirado|persona protegida)\]/g, '<span class="retirado">[$1]</span>');
+}
+// Nota larga: se muestra el principio y el resto al pulsar "Leer más".
+function notaLarga(n, clase='nota-txt'){
+  if (n.length <= 700) return `<p class="${clase}">${texto(n)}</p>`;
+  const corte = n.lastIndexOf(' ', 450) > 300 ? n.lastIndexOf(' ', 450) : 450;
+  return `<details><summary><span class="${clase}" style="color:var(--ink)">${texto(n.slice(0, corte))}…</span> Leer más</summary><p class="${clase}">${texto(n.slice(corte))}</p></details>`;
+}
+// Lista de acontecimientos: [etiqueta, fecha, lugar, valor, notas?, fuentes?, asociados?]
+function listaEventos(evs){
+  if (!evs || !evs.length) return '';
+  return '<ul class="ficha-ev">' + evs.map(e => {
+    const [et, fe, lu, va, no=[], so=[], as=[]] = e;
+    const cuerpo = [fe, lu && (fe ? 'en ' + lu : lu)].filter(Boolean).join(' ');
+    const val = va && va !== 'Y' ? (cuerpo ? ' · ' : '') + va : '';
+    const asoc = as.map(([rel, c]) => { const q = P(c); return q && q[0] !== null ? `<div class="fte">${esc(rel.charAt(0).toUpperCase() + rel.slice(1))}: ${enlace(c, nombreCompleto(q))}</div>` : ''; }).join('');
+    return `<li><span class="k">${esc(et)}</span>${esc(cuerpo)}${esc(val)}${!cuerpo && !val ? '<span class="m" style="color:var(--mut)">sin fecha ni lugar registrados</span>' : ''}` +
+      no.map(n => notaLarga(n, 'det')).join('') +
+      asoc + so.map(f => `<div class="fte">Fuente: ${texto(f)}</div>`).join('') + '</li>';
+  }).join('') + '</ul>';
+}
+function listaFuentes(so){ return so && so.length ? '<ol>' + so.map(f => `<li>${texto(f)}</li>`).join('') + '</ol>' : ''; }
+
 function caja(id, rol, extra=''){
   if (id == null) return `<div class="caja vacio">${rol}: sin datos</div>`;
   const p = P(id);
@@ -237,6 +286,23 @@ function mostrarFicha(id){
   if (p[8]) datos.push(['Oficio', p[8]]);
   if (estado(p) === PROTEGIDA)
     h += `<div class="caja foco prot"><h2>${esc(nombreCompleto(p))}</h2><p class="nota">🔒 Persona viva o posiblemente viva. Para proteger su privacidad solo se muestran su nombre y sus vínculos familiares.</p></div>`;
+  else if (p[13]){
+    const d = p[13];
+    const otros = (p[11] && p[11].length) ? `<p class="nota">También conocido/a como: ${esc(p[11].join(', '))}</p>` : '';
+    h += `<div class="caja foco"><h2>${esc(nombreCompleto(p))}</h2>${otros}` +
+         (d.ev && d.ev.length ? listaEventos(d.ev) : '<span class="m">Sin más datos registrados.</span>') + '</div>';
+    if (d.as && d.as.length){
+      h += '<div class="bloque"><h3>Aparece también como</h3><ul class="ficha-ev">' + d.as.map(([rel, fid]) => {
+        const f = D.f[fid]; if (!f) return '';
+        const nom = c => { if (c == null) return '?'; const q = P(c); return q[0] === null ? 'persona privada' : enlace(c, nombreCompleto(q)); };
+        return `<li>${esc(rel.charAt(0).toUpperCase() + rel.slice(1))} en la boda de ${nom(f[0])} y ${nom(f[1])}${f[2] ? ' (' + esc(f[2]) + ')' : ''}</li>`;
+      }).join('') + '</ul></div>';
+    }
+    if (d.no && d.no.length) h += `<div class="bloque"><h3>Notas</h3>${d.no.map(n => notaLarga(n)).join('')}</div>`;
+    if (d.im && d.im.length) h += `<div class="bloque"><h3>Imágenes (${d.im.length})</h3><div class="imgs">` +
+      d.im.map(u => `<a href="${esc(u)}" target="_blank" rel="noopener nofollow"><img src="${esc(u)}" alt="Imagen de ${esc(nombreCompleto(p))}" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.style.display='none'"></a>`).join('') + '</div></div>';
+    if (d.so && d.so.length) h += `<div class="bloque"><h3>Fuentes (${d.so.length})</h3>${listaFuentes(d.so)}</div>`;
+  }
   else h += `<div class="caja foco"><h2>${esc(nombreCompleto(p))}</h2>` +
        (datos.length ? '<dl>' + datos.map(([k,v])=>`<dt>${k}</dt><dd>${esc(v)}</dd>`).join('') + '</dl>' : '<span class="m">Sin más datos registrados.</span>') + '</div>';
 
@@ -262,7 +328,15 @@ function mostrarFicha(id){
       const boda = [f[2], f[3] ? 'en ' + f[3] : ''].filter(Boolean).join(' ');
       cab = `<h3>Con ${nom}${boda ? ' (casados ' + esc(boda) + ')' : ''}</h3>`;
     } else cab = '<h3>Con pareja desconocida</h3>';
-    h += `<div class="union">${cab}` + (f[4].length
+    let boda = '';
+    if (f[5]){
+      const d = f[5];
+      const extra = (d.ev||[]).some(e => e.length > 4) || (d.no && d.no.length) || (d.so && d.so.length) || (d.ev||[]).length > 1;
+      if (extra) boda = `<details class="boda"><summary>Datos del matrimonio</summary>${listaEventos(d.ev)}` +
+        (d.no && d.no.length ? d.no.map(n => notaLarga(n, 'det')).join('') : '') +
+        (d.so && d.so.length ? d.so.map(x => `<div class="fte">Fuente: ${texto(x)}</div>`).join('') : '') + '</details>';
+    }
+    h += `<div class="union">${cab}${boda}` + (f[4].length
       ? '<div class="hijos">' + f[4].map(c => caja(c, 'Hijo/a')).join('') + '</div>'
       : '<p class="sin">No constan hijos de esta unión.</p>') + '</div>';
   });
