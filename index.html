@@ -276,7 +276,9 @@ function buscar(nom, ap1, ap2, variantes){
     }
     if (q1){
       const a1 = canon(x.g[0]||'', variantes);
-      if (a1 !== q1) { if(!a1.startsWith(q1)) continue; } else score += 3;
+      const todos = x.g.map(g=>canon(g,variantes)).join(' ');
+      if (a1 === q1 || todos === q1) score += 3;
+      else if (!a1.startsWith(q1) && !todos.startsWith(q1)) continue;  // admite los dos apellidos en la primera casilla
     }
     if (q2){
       const a2 = x.g.slice(1).map(g=>canon(g,variantes)).join(' ');
@@ -288,6 +290,20 @@ function buscar(nom, ap1, ap2, variantes){
   }
   out.sort((a,b)=> b[0]-a[0] || (a[1].año||'9999').localeCompare(b[1].año||'9999'));
   return out.map(o=>o[1].id);
+}
+// Si no hay resultados, búsqueda flexible: cada palabra escrita (en cualquier casilla)
+// debe aparecer al principio de alguna palabra del nombre o de los apellidos.
+function buscarFlexible(nom, ap1, ap2, variantes){
+  const qs = norm([nom,ap1,ap2].join(' ')).split(' ').filter(t=>t && !PARTICULAS.has(t));
+  if (!qs.length) return [];
+  const out = [];
+  for (const x of IDX){
+    const ap = x.g.flatMap(g=>canon(g,variantes).split(' '));
+    const ok = x.nombres.some(ns => qs.every(q => ns.some(t=>t.startsWith(q)) || ap.some(t=>t.startsWith(canon(q,variantes)))));
+    if (ok) out.push(x);
+  }
+  out.sort((a,b)=> (a.año||'9999').localeCompare(b.año||'9999'));
+  return out.map(x=>x.id);
 }
 
 /* ===== Presentación ===== */
@@ -573,7 +589,8 @@ function ejecutar(){
   document.getElementById('ficha').innerHTML = ''; rastro = []; pintarRastro(); lista.innerHTML = '';
   if (location.hash) history.pushState(null,'',location.pathname+location.search);
   if (!norm(nom) && !norm(a1) && !norm(a2)){ est.textContent='Escribe al menos un nombre o un apellido.'; lista.hidden=true; return; }
-  const ids = buscar(nom,a1,a2,document.getElementById('variantes').checked);
+  let ids = buscar(nom,a1,a2,document.getElementById('variantes').checked);
+  if (!ids.length) ids = buscarFlexible(nom,a1,a2,document.getElementById('variantes').checked);
   registrar(ids.length ? 'búsqueda' : 'búsqueda sin resultados', [nom, a1, a2].map(x=>x.trim()).join(' | '), ids.length);
   if (!ids.length){
     est.innerHTML='No se ha encontrado a nadie con esos datos. Prueba con menos datos (solo el primer apellido) o con otra grafía. Si sigues sin encontrarlo, <a href="#pista" class="a-pista">cuéntame lo que sabes de esa persona</a> para incluirla en futuras investigaciones.';
