@@ -51,7 +51,8 @@
   .foco .nota{margin:4px 0 0;color:var(--mut);font-size:.92rem}
   .privacidad{margin:0 0 18px;padding:8px 12px;border-left:3px solid var(--acc);background:var(--accbg);font-size:.88rem;color:var(--ink)}
   .privacidad a,footer a,.coment a{color:var(--acc)}
-  .coment .chk{font-size:.85rem;color:var(--mut);margin-top:8px}
+  .coment .chk{display:block;font-size:.85rem;color:var(--mut);margin-top:10px;line-height:1.5}
+  .coment .chk input{margin:0 6px 0 0;vertical-align:-2px}
   .foco{border:2px solid var(--acc);background:var(--accbg);padding:14px 16px}
   .foco h2{margin:0 0 6px;font-size:1.25rem}
   .foco dl{display:grid;grid-template-columns:max-content 1fr;gap:2px 12px;margin:0;font-size:.95rem}
@@ -91,6 +92,19 @@
   .boda .det{white-space:pre-wrap;margin:3px 0 0;font-size:.9rem}
   .boda .fte{margin:2px 0 0;color:var(--mut);font-size:.82rem;white-space:pre-wrap;word-break:break-word}
   .retirado{color:var(--priv);font-style:italic}
+  /* Formulario "¿No encuentras a tu familiar?" */
+  .ir-pista{margin:10px 0 0;font-size:.9rem}
+  .ir-pista a{color:var(--acc)}
+  #pista{margin-top:34px;scroll-margin-top:12px}
+  #pista.destacado{outline:3px solid var(--acc);outline-offset:4px}
+  .pista h3{font-size:1.15rem}
+  .pista fieldset{border:1px solid var(--line);border-radius:8px;padding:10px 12px 12px;margin:12px 0 0}
+  .pista legend{font-size:.85rem;color:var(--acc);font-weight:bold;padding:0 6px}
+  .pista .tres{display:grid;grid-template-columns:2fr 1fr 1.4fr;gap:10px;align-items:end}
+  .pista .dos{align-items:end}
+  .pista .dos+.dos,.pista .tres+.tres{margin-top:8px}
+  .pista textarea{min-height:80px}
+  @media (max-width:600px){.pista .tres{grid-template-columns:1fr}}
   .trampa{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
   footer{margin-top:30px;color:var(--mut);font-size:.8rem}
   @media (max-width:600px){form#f{grid-template-columns:1fr}.padres{grid-template-columns:1fr}.coment .dos{grid-template-columns:1fr}}
@@ -113,10 +127,62 @@
     </div>
   </form>
 
+  <p class="ir-pista">¿No encuentras a tu familiar? <a href="#pista" id="enl-pista">Cuéntame lo que sabes de él o ella ↓</a></p>
   <p id="estado" role="status">Cargando datos…</p>
   <ul id="lista" class="res" hidden></ul>
   <nav id="rastro" aria-label="Tu recorrido por el árbol" hidden></nav>
   <div id="ficha" class="arbol"></div>
+
+  <form id="pista" class="coment pista" autocomplete="on" hidden>
+    <h3>¿No encuentras a tu familiar?</h3>
+    <p class="m">Puede que todavía no esté en el árbol. Escribe todo lo que sepas sobre esa persona y sus antepasados —nombres y apellidos completos, fechas aproximadas y de dónde eran—. Cualquier pista ayuda: la tendré en cuenta en futuras investigaciones. El mensaje llega directamente al autor de familiaberbel.org y no se publica.</p>
+
+    <fieldset><legend>La persona que buscas</legend>
+      <div class="tres">
+        <label>Nombre y apellidos completos<input type="text" name="buscada" maxlength="150" required></label>
+        <label>Año aproximado de nacimiento<input type="text" name="buscada_año" maxlength="40" placeholder="p. ej. h. 1890"></label>
+        <label>Lugar de nacimiento o procedencia<input type="text" name="buscada_lugar" maxlength="150" placeholder="pueblo, provincia, país"></label>
+      </div>
+    </fieldset>
+
+    <fieldset><legend>Sus padres</legend>
+      <div class="dos">
+        <label>Padre: nombre, apellidos y procedencia<input type="text" name="padre" maxlength="200"></label>
+        <label>Madre: nombre, apellidos y procedencia<input type="text" name="madre" maxlength="200"></label>
+      </div>
+    </fieldset>
+
+    <fieldset><legend>Sus abuelos</legend>
+      <div class="dos">
+        <label>Abuelo paterno<input type="text" name="abuelo_pat" maxlength="200"></label>
+        <label>Abuela paterna<input type="text" name="abuela_pat" maxlength="200"></label>
+      </div>
+      <div class="dos">
+        <label>Abuelo materno<input type="text" name="abuelo_mat" maxlength="200"></label>
+        <label>Abuela materna<input type="text" name="abuela_mat" maxlength="200"></label>
+      </div>
+    </fieldset>
+
+    <fieldset><legend>Bisabuelos y antepasados más lejanos</legend>
+      <label>Nombres y apellidos completos, y de dónde eran<textarea name="bisabuelos" maxlength="5000" placeholder="p. ej. Bisabuelo paterno: Antonio Berbel Martínez, de Huéneja (Granada), h. 1860…"></textarea></label>
+    </fieldset>
+
+    <fieldset><legend>Otras pistas</legend>
+      <label>Hermanos, cónyuge, oficios, documentos, fotos, historias familiares…<textarea name="pistas" maxlength="5000"></textarea></label>
+    </fieldset>
+
+    <fieldset><legend>Tus datos (para poder responderte)</legend>
+      <div class="tres">
+        <label>Tu nombre<input type="text" name="nombre" maxlength="100" required></label>
+        <label>Tu relación con esa persona<input type="text" name="relacion" maxlength="100" placeholder="p. ej. bisnieto"></label>
+        <label>Tu correo<input type="email" name="email" maxlength="150" required></label>
+      </div>
+    </fieldset>
+
+    <label class="chk"><input type="checkbox" name="acepto" required> He leído la <a class="enl-priv2" href="#" target="_blank" rel="noopener">política de privacidad</a> y acepto que estos datos se usen solo para responderme y para la investigación genealógica de familiaberbel.org.</label>
+    <label class="trampa" aria-hidden="true">No rellenar<input type="text" name="_honey" tabindex="-1" autocomplete="off"></label>
+    <div class="acc"><button type="submit">Enviar información</button><span class="res-env" role="status"></span></div>
+  </form>
 
   <footer id="pie"></footer>
 </div>
@@ -367,8 +433,50 @@ function formularioComentario(id, p){
   </form>`;
 }
 
+async function enviarFormSubmit(form, cuerpo, okMsg){
+  const res = form.querySelector('.res-env'), btn = form.querySelector('button[type=submit]');
+  btn.disabled = true; res.className = 'res-env'; res.textContent = 'Enviando…';
+  try {
+    const r = await fetch('https://formsubmit.co/ajax/' + encodeURIComponent(COMENTARIOS_DESTINO), {
+      method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body: JSON.stringify(cuerpo)});
+    const j = await r.json().catch(()=>({}));
+    if (!r.ok || String(j.success) === 'false') throw new Error(j.message || 'HTTP ' + r.status);
+    form.reset(); res.className = 'res-env ok'; res.textContent = okMsg;
+  } catch(err){
+    res.className = 'res-env err'; res.textContent = 'No se ha podido enviar (' + err.message + '). Inténtalo más tarde.';
+  } finally { btn.disabled = false; }
+}
+
+async function enviarPista(form){
+  const fd = new FormData(form);
+  if (fd.get('_honey')) return;                    // robot
+  const g = k => (fd.get(k) || '').toString().trim() || '—';
+  const busq = ['q-nom','q-ap1','q-ap2'].map(k => document.getElementById(k).value.trim()).filter(Boolean).join(' ');
+  await enviarFormSubmit(form, {
+    _subject: `Antepasado no encontrado: ${g('buscada')} — Buscador familiaberbel.org`,
+    _template: 'table',
+    _replyto: fd.get('email'),
+    'Persona buscada': g('buscada'),
+    'Año aproximado de nacimiento': g('buscada_año'),
+    'Lugar de nacimiento o procedencia': g('buscada_lugar'),
+    'Padre': g('padre'),
+    'Madre': g('madre'),
+    'Abuelo paterno': g('abuelo_pat'),
+    'Abuela paterna': g('abuela_pat'),
+    'Abuelo materno': g('abuelo_mat'),
+    'Abuela materna': g('abuela_mat'),
+    'Bisabuelos y antepasados': g('bisabuelos'),
+    'Otras pistas': g('pistas'),
+    'Nombre del visitante': g('nombre'),
+    'Relación con la persona': g('relacion'),
+    'Correo del visitante': g('email'),
+    'Última búsqueda en el buscador': busq || '—',
+    'Acepta la política de privacidad': fd.get('acepto') ? 'sí' : 'no',
+  }, '¡Muchas gracias! La información se ha enviado. Te responderé por correo.');
+}
+
 async function enviarComentario(form){
-  const id = +form.dataset.pid, p = P(id), res = form.querySelector('.res-env'), btn = form.querySelector('button');
+  const id = +form.dataset.pid, p = P(id);
   const fd = new FormData(form);
   if (fd.get('_honey')) return;                    // robot
   const persona = nombreCompleto(p), ficha = location.origin + location.pathname + '#p' + id;
@@ -383,16 +491,7 @@ async function enviarComentario(form){
     'Comentario': fd.get('comentario'),
     'Acepta la política de privacidad': fd.get('acepto') ? 'sí' : 'no',
   };
-  btn.disabled = true; res.className = 'res-env'; res.textContent = 'Enviando…';
-  try {
-    const r = await fetch('https://formsubmit.co/ajax/' + encodeURIComponent(COMENTARIOS_DESTINO), {
-      method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body: JSON.stringify(cuerpo)});
-    const j = await r.json().catch(()=>({}));
-    if (!r.ok || String(j.success) === 'false') throw new Error(j.message || 'HTTP ' + r.status);
-    form.reset(); res.className = 'res-env ok'; res.textContent = '¡Gracias! Tu comentario se ha enviado.';
-  } catch(err){
-    res.className = 'res-env err'; res.textContent = 'No se ha podido enviar (' + err.message + '). Inténtalo más tarde.';
-  } finally { btn.disabled = false; }
+  await enviarFormSubmit(form, cuerpo, '¡Gracias! Tu comentario se ha enviado.');
 }
 
 /* ===== Navegación, recorrido e historial ===== */
@@ -451,8 +550,8 @@ function ejecutar(){
   if (!norm(nom) && !norm(a1) && !norm(a2)){ est.textContent='Escribe al menos un nombre o un apellido.'; lista.hidden=true; return; }
   const ids = buscar(nom,a1,a2,document.getElementById('variantes').checked);
   if (!ids.length){
-    est.textContent='No se ha encontrado a nadie con esos datos. Prueba con menos datos (solo el primer apellido) o con otra grafía. Si la persona vivió hace menos de unos 110 años y no consta su defunción, no se muestra.';
-    lista.hidden=true; return;
+    est.innerHTML='No se ha encontrado a nadie con esos datos. Prueba con menos datos (solo el primer apellido) o con otra grafía. Si sigues sin encontrarlo, <a href="#pista" class="a-pista">cuéntame lo que sabes de esa persona</a> para incluirla en futuras investigaciones.';
+    lista.hidden=true; destacarPista([nom, a1, a2].map(x=>x.trim()).filter(Boolean).join(' ')); return;
   }
   if (ids.length === 1){ lista.hidden=true; irA(ids[0], true); est.textContent='1 resultado'; return; }
   const mostrar = ids.slice(0, MAX_RESULTADOS);
@@ -470,7 +569,8 @@ document.getElementById('limpiar').addEventListener('click', () => {
 });
 document.addEventListener('submit', e => {
   const form = e.target.closest('form.coment'); if(!form) return;
-  e.preventDefault(); enviarComentario(form);
+  e.preventDefault();
+  if (form.id === 'pista') enviarPista(form); else enviarComentario(form);
 });
 document.addEventListener('click', e => {
   const t = e.target.closest('[data-id]'); if(!t || !D) return;
@@ -480,6 +580,25 @@ document.addEventListener('click', e => {
   if (t.closest('#lista')){ document.getElementById('lista').hidden = true; irA(id, true); }
   else irA(id);
 });
+
+function destacarPista(nombre){
+  const f = document.getElementById('pista'); if (!f || f.hidden) return;
+  if (nombre && !f.buscada.value) f.buscada.value = nombre;
+  f.classList.add('destacado');
+  setTimeout(() => f.classList.remove('destacado'), 4000);
+}
+document.addEventListener('click', e => {
+  const a = e.target.closest('#enl-pista, .a-pista'); if (!a) return;
+  e.preventDefault();
+  const f = document.getElementById('pista');
+  f.scrollIntoView({behavior:'smooth', block:'start'});
+  destacarPista([ 'q-nom','q-ap1','q-ap2' ].map(k => document.getElementById(k).value.trim()).filter(Boolean).join(' '));
+  setTimeout(() => f.buscada.focus({preventScroll:true}), 500);
+});
+if (COMENTARIOS_DESTINO){
+  document.getElementById('pista').hidden = false;
+  document.querySelectorAll('.enl-priv2').forEach(a => a.href = URL_PRIVACIDAD);
+} else document.querySelector('.ir-pista').hidden = true;
 
 cargar().then(() => {
   document.getElementById('estado').textContent = '';
