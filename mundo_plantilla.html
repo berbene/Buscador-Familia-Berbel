@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>El apellido Berbel en el mundo · Familia Berbel</title>
+<meta name="description" content="Mapa del apellido Berbel en el mundo por países: España, Brasil, Argentina, Francia, Colombia, Estados Unidos y otros 17 países.">
+<style>
+  :root{--bg:#fbfaf7;--card:#fff;--ink:#222;--mut:#6b6b66;--line:#ddd9cf;--acc:#0f615d;--accbg:#e4f0ee;--land:#efede6;--landA:#e2ece6;--sea:#f4f7f8;--na:#b9b6ad}
+  @media (prefers-color-scheme:dark){:root{--bg:#1c1b19;--card:#262522;--ink:#ece9e2;--mut:#a5a198;--line:#3b3935;--acc:#7cc7bd;--accbg:#1f3331;--land:#2c2b28;--landA:#28362f;--sea:#1f2222;--na:#6d6a63}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Georgia,"Times New Roman",serif}
+  .wrap{max-width:1000px;margin:0 auto;padding:20px 16px 48px}
+  .nav{font-size:.9rem;margin-bottom:10px}.nav a{color:var(--acc)}
+  h1{font-size:1.6rem;margin:0 0 4px}
+  .sub{color:var(--mut);margin:0 0 16px;font-size:.95rem}
+  .filtros{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:flex-end;margin:0 0 14px}
+  .grupo{display:flex;flex-direction:column;gap:4px}
+  .grupo>span{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mut)}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--card);flex-wrap:wrap}
+  .seg button{font:inherit;font-size:.9rem;padding:6px 12px;border:0;background:transparent;color:var(--ink);cursor:pointer}
+  .seg button+button{border-left:1px solid var(--line)}
+  .seg button[aria-pressed=true]{background:var(--acc);color:#fff}
+  @media (prefers-color-scheme:dark){.seg button[aria-pressed=true]{color:#1c1b19}}
+  .seg button:disabled{opacity:.4;cursor:not-allowed}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 14px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .kpi b{display:block;font-size:1.45rem;line-height:1.2}
+  .kpi span{font-size:.82rem;color:var(--mut)}
+  .cuerpo{display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start}
+  .mapa{background:var(--sea);border:1px solid var(--line);border-radius:10px;position:relative;overflow:hidden}
+  .mapa svg{display:block;width:100%;height:auto}
+  .tierra{fill:var(--land);stroke:var(--line);stroke-width:1}
+  .prov{stroke:var(--card);stroke-width:.8;stroke-linejoin:round}
+  .prov.con,.mun{cursor:pointer}
+  .prov.con:hover,.prov.sel{stroke:var(--ink);stroke-width:1.6}
+  .mun{stroke:var(--card);stroke-width:.25}
+  .mun.con:hover,.mun.sel{stroke:var(--ink);stroke-width:.8}
+  .provAnd{fill:none;stroke:var(--mut);stroke-width:.7;pointer-events:none}
+  .andal{fill:none;stroke:var(--acc);stroke-width:1.6;pointer-events:none}
+  .pt{fill:var(--mut);font-size:11px;font-family:system-ui,sans-serif}
+  .burbuja{stroke:var(--card);stroke-width:2;cursor:pointer}
+  .burbuja:hover,.burbuja.sel{stroke:var(--ink)}
+  .na{fill:none;stroke:var(--na);stroke-width:1.5;stroke-dasharray:2 2;cursor:pointer}
+  .et{font-size:12px;font-family:system-ui,sans-serif;fill:var(--ink);paint-order:stroke;stroke:var(--sea);stroke-width:3px;stroke-linejoin:round;pointer-events:none}
+  .inset{fill:none;stroke:var(--line)}
+  .leyenda{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;font-size:.8rem;color:var(--mut);padding:8px 12px;border-top:1px solid var(--line);background:var(--card);font-family:system-ui,sans-serif}
+  .leyenda i{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:4px}
+  #tip{position:absolute;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:.85rem;box-shadow:0 4px 14px rgba(0,0,0,.12);display:none;max-width:240px;font-family:system-ui,sans-serif;line-height:1.35}
+  #tip b{display:block;font-size:.95rem}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
+  .panel h2{font-size:1rem;margin:0 0 8px}
+  .rk{list-style:none;margin:0;padding:0;font-family:system-ui,sans-serif;font-size:.85rem}
+  .rk li{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:5px 4px;border-radius:6px;cursor:pointer}
+  .rk li:hover,.rk li.sel{background:var(--accbg)}
+  .rk .barra{grid-column:1/-1;height:6px;border-radius:3px;background:var(--acc);opacity:.8}
+  .rk .v{font-variant-numeric:tabular-nums;color:var(--mut)}
+  .rk .v b{color:var(--ink)}
+  details{margin-top:16px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+  summary{cursor:pointer;font-weight:bold}
+  table{border-collapse:collapse;width:100%;font-family:system-ui,sans-serif;font-size:.85rem;margin-top:8px}
+  th,td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line)}
+  td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+  #filtroMuni{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);width:100%;max-width:320px;margin-top:8px}
+  .notas{font-size:.85rem;color:var(--mut);margin-top:18px}
+  .cta{margin-top:18px;padding:14px 16px;border-radius:10px;background:linear-gradient(135deg,#0a4744,#0f615d 55%,#1b7a74);color:#fff;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between}
+  .cta a{background:#ffff00;color:#0a4744;font-weight:bold;padding:9px 16px;border-radius:8px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+  .pais{stroke:var(--card);stroke-width:.4;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+  .pais.con{cursor:pointer}
+  .pais.con:hover,.pais.sel{stroke:var(--ink);stroke-width:1.5}
+  .marca{stroke:var(--card);stroke-width:1;cursor:pointer}
+  .fuente{font-size:.72rem;color:var(--mut)}
+  @media (max-width:820px){.cuerpo{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <div class="nav"><a href="https://familiaberbel.org/">← familiaberbel.org</a> · <a href="./">Buscador de antepasados</a> · <a href="apellido.html">Mapa de España</a></div>
+  <h1>El apellido Berbel en el mundo</h1>
+  <p class="sub">Dónde viven hoy las personas apellidadas Berbel, país por país. Pulsa en España para ver el mapa por provincias y municipios.</p>
+
+  <div class="filtros" role="group" aria-label="Filtros del mapa">
+    <div class="grupo"><span>Zona</span><div class="seg" id="fZona"></div></div>
+    <div class="grupo"><span>Color del mapa</span><div class="seg" id="fColor"></div></div>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="cuerpo">
+    <div class="mapa" id="mapa">
+      <svg id="svg" role="img" aria-labelledby="svgT"><title id="svgT">Mapa del mundo coloreado según la presencia del apellido Berbel</title></svg>
+      <div id="tip"></div>
+      <div class="leyenda" id="leyenda"></div>
+    </div>
+    <div class="panel">
+      <h2>Países con más Berbel</h2>
+      <ol class="rk" id="rk"></ol>
+    </div>
+  </div>
+
+  <details>
+    <summary>Tabla de todos los países</summary>
+    <table><thead><tr><th>País</th><th class="n">Personas</th><th class="n">Por millón de hab.</th><th>Fuente</th></tr></thead><tbody id="tabla"></tbody></table>
+  </details>
+
+  <div class="cta"><span>¿Te apellidas Berbel y vives fuera de España? Me encantará saber de dónde viene tu rama.</span><a href="./#pista">Cuéntame tu historia</a></div>
+
+  <p class="notas">
+    <b>Fuentes.</b> España: Instituto Nacional de Estadística, Estadística del Padrón Continuo, «Frecuencia de apellidos» (personas con Berbel como primer apellido, por residencia). Resto de países: estimación de <a href="https://forebears.io/surnames/berbel">Forebears</a> (consulta del 19/11/2026), que según la propia web se calcula a partir de una base de datos mundial de más de 4.000 millones de personas. Son estimaciones, no censos oficiales, y las cifras pequeñas pueden variar mucho.<br>
+    Para España se usa el primer apellido porque es el que se transmite y el comparable con los países donde solo se lleva un apellido. Contando también a quienes lo llevan como segundo apellido, en España hay 5.561 personas Berbel (<a href="apellido.html">ver el mapa de España</a>).
+    El dato del Reino Unido corresponde solo a Inglaterra. Los países muy pequeños se señalan con un punto. Contornos: Natural Earth (dominio público), a través de world-atlas.
+  </p>
+</div>
+
+<script id="datos" type="application/json">/*DATOS*/</script>
+<script id="geo" type="application/json">/*GEO*/</script>
+<script>
+const DAT = JSON.parse(document.getElementById('datos').textContent);
+const GEO = JSON.parse(document.getElementById('geo').textContent);
+const POR = Object.fromEntries(DAT.map(r=>[r.id,r]));
+const st = {color:'t', zona:'mundo', sel:null};
+/* Proyección Equal Earth (la misma que construir_mundo.py) */
+function proy(lo,la){ const A1=1.340264,A2=-0.081106,A3=0.000893,A4=0.003796,M=Math.sqrt(3)/2,K=150;
+  const l=lo*Math.PI/180, t=Math.asin(M*Math.sin(la*Math.PI/180)), t2=t*t, t6=t2*t2*t2;
+  return [2*Math.sqrt(3)*l*Math.cos(t)/(3*(9*A4*t6*t2+7*A3*t6+3*A2*t2+A1))*K, -t*(A4*t6*t2+A3*t6+A2*t2+A1)*K]; }
+function caja(lo0,la0,lo1,la1){ const xs=[],ys=[]; for(let i=0;i<=10;i++) for(let j=0;j<=10;j++){ const [x,y]=proy(lo0+(lo1-lo0)*i/10, la0+(la1-la0)*j/10); xs.push(x); ys.push(y); }
+  const x0=Math.min(...xs), y0=Math.min(...ys); return {vb:[x0,y0,Math.max(...xs)-x0,Math.max(...ys)-y0].map(v=>v.toFixed(1)).join(' '), ancho:Math.max(...xs)-x0}; }
+const ZONAS = {mundo:{vb:'-410 -190 820 345', ancho:820}, america:caja(-128,-56,-32,52), europa:caja(-11,34,32,61)};
+const VERDES = ['#cfe7e3','#9fcfc7','#5faea3','#1f7d74','#0a4744'];
+const CORTES = {t:[5,20,100,1000], pm:[0.1,0.5,2,10]};
+const fmt = n => n==null ? '—' : String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+const fmtPM = n => n==null ? '—' : n.toLocaleString('es-ES',{maximumFractionDigits: n<1?2:1});
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const colorDe = v => VERDES[CORTES[st.color].filter(x=>v>=x).length];
+
+function botones(){
+  const z=document.getElementById('fZona'); z.innerHTML='';
+  for(const [v,t] of [['mundo','Mundo'],['america','América'],['europa','Europa']]){
+    const b=document.createElement('button'); b.type='button'; b.textContent=t; b.dataset.v=v;
+    b.onclick=()=>{st.zona=v; pintar();}; z.appendChild(b);
+  }
+  const el=document.getElementById('fColor'); el.innerHTML='';
+  for(const [v,t] of [['t','Nº de personas'],['pm','Frecuencia (por millón)']]){
+    const b=document.createElement('button'); b.type='button'; b.textContent=t; b.dataset.v=v;
+    b.setAttribute('aria-pressed', st.color===v); b.onclick=()=>{st.color=v; pintar();}; el.appendChild(b);
+  }
+}
+
+function pintar(){
+  document.querySelectorAll('#fColor button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.v===st.color));
+  document.querySelectorAll('#fZona button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.v===st.zona));
+  const total = DAT.reduce((s,r)=>s+r.t,0), esp = POR['724'], fuera = total-esp.t;
+  const ext = DAT.filter(r=>r.id!=='724').sort((a,b)=>b.t-a.t)[0];
+  document.getElementById('kpis').innerHTML = `
+    <div class="kpi"><b>≈ ${fmt(Math.round(total/100)*100)}</b><span>personas Berbel en el mundo</span></div>
+    <div class="kpi"><b>${DAT.length}</b><span>países con presencia del apellido</span></div>
+    <div class="kpi"><b>${Math.round(100*fuera/total)} %</b><span>viven fuera de España (≈ ${fmt(Math.round(fuera/10)*10)})</span></div>
+    <div class="kpi"><b>${esc(ext.n)}</b><span>el país con más Berbel después de España (${fmt(ext.t)})</span></div>`;
+
+  // Encuadre: sin el Ártico ni el extremo sur
+  const svg=document.getElementById('svg');
+  const Z=ZONAS[st.zona], e=Z.ancho/820;  // escala de textos y puntos según el zoom
+  svg.setAttribute('viewBox', Z.vb);
+  let s='';
+  const val = r => st.color==='t' ? r.t : r.pm;
+  for(const [id,g] of Object.entries(GEO)){
+    const r=POR[id];
+    s += `<path class="pais${r?' con':''}${r&&st.sel===id?' sel':''}" data-id="${id}" d="${g.d}" fill="${r?colorDe(val(r)):'var(--land)'}"/>`;
+  }
+  // Puntos para los países demasiado pequeños para verse
+  for(const r of DAT){ const g=GEO[r.id]; if(g && g.a<(st.zona==='mundo'?25:6)) s += `<circle class="marca" data-id="${r.id}" cx="${g.c[0]}" cy="${g.c[1]}" r="${(st.zona==='mundo'?3.2:2.2)*Math.max(e,.35)}" fill="${colorDe(val(r))}"/>`; }
+  // Etiquetas de los principales
+  const AJ = {mundo:{'724':[-22,8],'250':[6,-12]}, europa:{'250':[0,-2]}, america:{}}[st.zona];
+  const nEt = st.zona==='mundo' ? 6 : 10, fs = 13*e;
+  for(const r of DAT.slice().sort((a,b)=>b.t-a.t).slice(0,nEt)){
+    const g=GEO[r.id]; if(!g) continue; const [dx,dy]=(AJ[r.id]||[0,0]).map(v=>v*e);
+    s += `<text class="et" x="${(g.c[0]+dx).toFixed(1)}" y="${(g.c[1]+dy).toFixed(1)}" text-anchor="middle" dominant-baseline="middle" style="font-size:${fs.toFixed(1)}px;stroke-width:${(3*e).toFixed(2)}px">${esc(r.n.replace(' (Inglaterra)',''))} · ${fmt(r.t)}</text>`;
+  }
+  svg.innerHTML=s;
+  svg.querySelectorAll('[data-id]').forEach(el=>{
+    const id=el.dataset.id, r=POR[id], n=GEO[id]?GEO[id].n:'';
+    el.addEventListener('mousemove', ev=>tip(ev, r, n));
+    el.addEventListener('mouseleave', tipOff);
+    if(r) el.addEventListener('click', ev=>{ if(id==='724'){ location.href='apellido.html'; return; } st.sel = st.sel===id?null:id; pintar(); tip(ev,r,n); });
+  });
+
+  const c=CORTES[st.color], f = st.color==='t'?fmt:fmtPM;
+  const rangos=[`< ${f(c[0])}`, ...c.slice(0,3).map((x,i)=>`${f(x)}–${f(c[i+1])}`), `≥ ${f(c[3])}`];
+  document.getElementById('leyenda').innerHTML = `<span>${st.color==='t'?'Personas:':'Por millón de habitantes:'}</span>` +
+    VERDES.map((col,i)=>`<span><i style="background:${col}"></i>${rangos[i]}</span>`).join('') +
+    `<span><i style="background:var(--land);border:1px solid var(--line)"></i>sin datos</span>`;
+
+  const lista = DAT.slice().sort((a,b)=>b.t-a.t), mx=lista[0].t;
+  document.getElementById('rk').innerHTML = lista.slice(0,12).map(r=>`<li data-id="${r.id}" class="${st.sel===r.id?'sel':''}">
+      <span>${esc(r.n)}${r.id==='724'?' <span class="fuente">(INE)</span>':''}</span>
+      <span class="v"><b>${fmt(r.t)}</b> · ${fmtPM(r.pm)} /millón</span>
+      <span class="barra" style="width:${Math.max(1,100*Math.sqrt(r.t/mx)).toFixed(1)}%"></span></li>`).join('');
+  document.querySelectorAll('#rk li').forEach(li=>li.onclick=()=>{ if(li.dataset.id==='724'){location.href='apellido.html';return;} st.sel = st.sel===li.dataset.id?null:li.dataset.id; pintar(); });
+  document.getElementById('tabla').innerHTML = lista.map(r=>`<tr><td>${esc(r.n)}</td><td class="n">${fmt(r.t)}</td><td class="n">${fmtPM(r.pm)}</td><td>${r.f}</td></tr>`).join('');
+}
+
+const tipEl=document.getElementById('tip');
+function tip(ev,r,n){
+  const box=document.getElementById('mapa').getBoundingClientRect();
+  tipEl.innerHTML = r ? `<b>${esc(r.n)}</b>${fmt(r.t)} personas<br>${fmtPM(r.pm)} por millón de habitantes<br><span class="fuente">Fuente: ${r.f}${r.id==='724'?' · pulsa para ver el mapa de España':''}${r.parcial?' · solo Inglaterra':''}</span>`
+                      : `<b>${esc(n)}</b>Sin datos del apellido`;
+  tipEl.style.display='block';
+  let x=ev.clientX-box.left+14, y=ev.clientY-box.top+14; if(x+250>box.width) x=ev.clientX-box.left-250;
+  tipEl.style.left=x+'px'; tipEl.style.top=y+'px';
+}
+function tipOff(){ tipEl.style.display='none'; }
+botones(); pintar();
+</script>
+</body>
+</html>
