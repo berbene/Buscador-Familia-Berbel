@@ -453,7 +453,8 @@ function formularioComentario(id, p){
     ? `<h3>¿Eres ${esc(nombreCompleto(p))} o un familiar directo?</h3>
     <p class="m">Puedes pedir que se corrija o que se retire este nombre del buscador; se atenderá en un plazo máximo de un mes. También puedes enviar cualquier otro comentario. El mensaje llega directamente al autor de familiaberbel.org y no se publica.</p>`
     : `<h3>¿Sabes algo más de ${esc(nombreCompleto(p))}?</h3>
-    <p class="m">Si tienes datos, documentos, fotos o una corrección sobre esta persona, escríbelo aquí. El mensaje llega directamente al autor de familiaberbel.org y no se publica.</p>`;
+    <p class="m">Si tienes datos, documentos o una corrección sobre esta persona, escríbelo aquí. El mensaje llega directamente al autor de familiaberbel.org y no se publica.</p>
+    <p class="m">📷 ¿Tienes una <b>foto antigua</b> (anterior a 1970) de ${esc(nombreCompleto(p))}? <a href="https://familiaberbel.org/comparte-tus-fotos/" target="_blank" rel="noopener">Compártela en el Álbum de la familia Berbel</a>.</p>`;
   return `<form class="coment" data-pid="${id}">
     ${cab}
     <div class="dos">
