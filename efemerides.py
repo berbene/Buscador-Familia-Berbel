@@ -94,14 +94,16 @@ def bloque(tipo, personas, dia, mes):
     else:
         texto = (f'🕯️ <strong>Hoy, {fecha}, recordamos</strong> a todos los Berbel que nos precedieron · '
                  f'<a href="{BUSCADOR}">Busca a tus antepasados →</a>')
+    largo = len(re.sub(r"<[^>]+>", "", texto))
+    clase = "cinta" + (" muy-larga" if largo > 450 else " larga" if largo > 180 else "")
     return (
         '<!-- wp:group {"align":"full","className":"hoy-recordamos","style":{"color":{"background":"#0a4744","text":"#ffffff"},'
         '"spacing":{"padding":{"top":"8px","bottom":"8px","left":"12px","right":"12px"}},"elements":{"link":{"color":{"text":"#ffff00"}}}},'
         '"layout":{"type":"constrained","contentSize":"100%"}} -->\n'
         '<div class="wp-block-group alignfull hoy-recordamos has-text-color has-background has-link-color" '
         'style="color:#ffffff;background-color:#0a4744;padding-top:8px;padding-right:12px;padding-bottom:8px;padding-left:12px">'
-        '<!-- wp:paragraph {"className":"cinta","style":{"typography":{"fontSize":"15px","lineHeight":"1.4"},"spacing":{"margin":{"top":"0","bottom":"0"}}}} -->\n'
-        f'<p class="cinta" style="margin-top:0;margin-bottom:0;font-size:15px;line-height:1.4">{texto}</p>\n'
+        f'<!-- wp:paragraph {{"className":"{clase}","style":{{"typography":{{"fontSize":"15px","lineHeight":"1.4"}},"spacing":{{"margin":{{"top":"0","bottom":"0"}}}}}}}} -->\n'
+        f'<p class="{clase}" style="margin-top:0;margin-bottom:0;font-size:15px;line-height:1.4">{texto}</p>\n'
         '<!-- /wp:paragraph --></div>\n<!-- /wp:group -->'
     )
 
