@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Buscador de antepasados</title>
+<meta name="description" content="Busca a tus antepasados Berbel (Bervel, Belber, Belver, Bellver, Velver…): más de 33.000 personas, con fechas, lugares y fuentes documentales.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Familia Berbel">
+<meta property="og:title" content="Buscador de antepasados de la familia Berbel">
+<meta property="og:description" content="¿Te apellidas Berbel? Escribe un nombre y encuentra a tus antepasados: fechas, lugares, padrinos y fuentes.">
+<meta property="og:image" content="https://berbene.github.io/Buscador-Familia-Berbel/img/mapa-apellido-berbel-espana.jpg">
+<meta property="og:url" content="https://berbene.github.io/Buscador-Familia-Berbel/">
+<meta name="twitter:card" content="summary_large_image">
 <style>
   :root{--bg:#fbfaf7;--card:#fff;--ink:#222;--mut:#6b6b66;--line:#ddd9cf;--acc:#7a3b1d;--accbg:#f4ebe4;--priv:#999;--ok:#2f6b2f;--err:#a32020}
   @media (prefers-color-scheme:dark){:root{--bg:#1c1b19;--card:#262522;--ink:#ece9e2;--mut:#a5a198;--line:#3b3935;--acc:#e0a27d;--accbg:#33281f;--priv:#777;--ok:#8fd18f;--err:#f08a8a}}
@@ -55,6 +63,11 @@
   .privacidad a,footer a,.coment a{color:var(--acc)}
   .coment .chk{display:block;font-size:.85rem;color:var(--mut);margin-top:10px;line-height:1.5}
   .coment .chk input{margin:0 6px 0 0;vertical-align:-2px}
+  .compartir{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0 0;padding-top:10px;border-top:1px solid var(--line);font-size:.92rem}
+  .compartir .lbl{color:var(--mut)}
+  .compartir a,.compartir button{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:0;font:inherit;font-size:.9rem;font-weight:bold;text-decoration:none;cursor:pointer;color:#fff}
+  .compartir .wa{background:#1f8f4e}.compartir .fb{background:#1b5fc1}.compartir .cp{background:#6b6b66}
+  .compartir a:hover,.compartir button:hover{filter:brightness(1.1)}
   .foco{border:2px solid var(--acc);background:var(--accbg);padding:14px 16px}
   .foco h2{margin:0 0 6px;font-size:1.25rem}
   .foco dl{display:grid;grid-template-columns:max-content 1fr;gap:2px 12px;margin:0;font-size:.95rem}
@@ -390,7 +403,7 @@ function mostrarFicha(id){
     const d = p[13];
     const otros = (p[11] && p[11].length) ? `<p class="nota">También conocido/a como: ${esc(p[11].join(', '))}</p>` : '';
     h += `<div class="caja foco"><h2>${esc(nombreCompleto(p))}</h2>${otros}` +
-         (d.ev && d.ev.length ? listaEventos(d.ev) : '<span class="m">Sin más datos registrados.</span>') + '</div>';
+         (d.ev && d.ev.length ? listaEventos(d.ev) : '<span class="m">Sin más datos registrados.</span>') + barraCompartir(id, p) + '</div>';
     if (d.as && d.as.length){
       h += '<div class="bloque"><h3>Aparece también como</h3><ul class="ficha-ev">' + d.as.map(([rel, fid]) => {
         const f = D.f[fid]; if (!f) return '';
@@ -404,7 +417,8 @@ function mostrarFicha(id){
     if (d.so && d.so.length) h += `<div class="bloque"><h3>Fuentes (${d.so.length})</h3>${listaFuentes(d.so)}</div>`;
   }
   else h += `<div class="caja foco"><h2>${esc(nombreCompleto(p))}</h2>` +
-       (datos.length ? '<dl>' + datos.map(([k,v])=>`<dt>${k}</dt><dd>${esc(v)}</dd>`).join('') + '</dl>' : '<span class="m">Sin más datos registrados.</span>') + '</div>';
+       (datos.length ? '<dl>' + datos.map(([k,v])=>`<dt>${k}</dt><dd>${esc(v)}</dd>`).join('') + '</dl>' : '<span class="m">Sin más datos registrados.</span>') + barraCompartir(id, p) + '</div>';
+
 
   // Hermanos
   const hs = hermanos(id);
@@ -445,6 +459,30 @@ function mostrarFicha(id){
   el.innerHTML = h;
   return true;
 }
+
+/* ===== Compartir ficha ===== */
+const URL_BUSCADOR = 'https://berbene.github.io/Buscador-Familia-Berbel/';
+function barraCompartir(id, p){
+  const año = t => ((t || '').match(/\d{4}/) || [''])[0];
+  const n = año(p[3] || p[5]), d = año(p[6]);
+  const fechas = n || d ? ` (${n || '?'}${d ? '–' + d : ''})` : '';
+  const url = URL_BUSCADOR + '#p' + id;
+  const txt = `He encontrado a ${nombreCompleto(p)}${fechas} en el buscador de antepasados de la familia Berbel 🌳 👉 ${url}`;
+  return `<div class="compartir" data-pid="${id}"><span class="lbl">¿Es de tu familia? Compártelo:</span>` +
+    `<a class="wa" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener" data-canal="whatsapp">💬 WhatsApp</a>` +
+    `<a class="fb" href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}" target="_blank" rel="noopener" data-canal="facebook">Facebook</a>` +
+    `<button type="button" class="cp" data-canal="copiar" data-url="${esc(url)}">🔗 Copiar enlace</button></div>`;
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('.compartir [data-canal]'); if (!b) return;
+  const caja = b.closest('.compartir'), id = +caja.dataset.pid, p = P(id);
+  registrar('compartir', p ? nombreCompleto(p) : '', b.dataset.canal, '#p' + id);
+  if (b.dataset.canal === 'copiar'){
+    const ok = () => { b.textContent = '✅ Enlace copiado'; setTimeout(()=>{ b.textContent = '🔗 Copiar enlace'; }, 2500); };
+    if (navigator.clipboard) navigator.clipboard.writeText(b.dataset.url).then(ok, ()=>prompt('Copia este enlace:', b.dataset.url));
+    else prompt('Copia este enlace:', b.dataset.url);
+  }
+});
 
 /* ===== Comentarios ===== */
 function formularioComentario(id, p){
