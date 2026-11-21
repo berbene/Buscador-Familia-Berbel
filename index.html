@@ -13,8 +13,8 @@
 <meta property="og:url" content="https://berbene.github.io/Buscador-Familia-Berbel/">
 <meta name="twitter:card" content="summary_large_image">
 <style>
-  :root{--bg:#fbfaf7;--card:#fff;--ink:#222;--mut:#6b6b66;--line:#ddd9cf;--acc:#7a3b1d;--accbg:#f4ebe4;--priv:#999;--ok:#2f6b2f;--err:#a32020}
-  @media (prefers-color-scheme:dark){:root{--bg:#1c1b19;--card:#262522;--ink:#ece9e2;--mut:#a5a198;--line:#3b3935;--acc:#e0a27d;--accbg:#33281f;--priv:#777;--ok:#8fd18f;--err:#f08a8a}}
+  :root{--bg:#fbfaf7;--card:#fff;--ink:#222;--mut:#6b6b66;--line:#ddd9cf;--acc:#7a3b1d;--accbg:#f4ebe4;--priv:#999;--ok:#2f6b2f;--err:#a32020;--rojo:#b3261e}
+  @media (prefers-color-scheme:dark){:root{--bg:#1c1b19;--card:#262522;--ink:#ece9e2;--mut:#a5a198;--line:#3b3935;--acc:#e0a27d;--accbg:#33281f;--priv:#777;--ok:#8fd18f;--err:#f08a8a;--rojo:#ff8a80}}
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Georgia,"Times New Roman",serif}
   .wrap{max-width:860px;margin:0 auto;padding:20px 16px 48px}
@@ -57,8 +57,12 @@
   .caja.priv,.caja.vacio{color:var(--priv);font-style:italic;background:transparent;border-style:dashed}
   .caja.prot{background:transparent;border-style:dashed;border-color:var(--acc)}
   .caja .etq{display:inline-block;margin-top:2px;font-size:.8rem;color:var(--mut);font-style:italic}
-  .foco.prot{border-style:dashed;background:transparent}
+  .caja.prot{border-color:var(--rojo)}
+  .caja.prot .etq,.rojo{color:var(--rojo);font-weight:bold;font-style:normal}
+  .caja.priv.menor{color:var(--rojo);border-color:var(--rojo);font-style:normal;font-weight:bold}
+  .foco.prot{border-style:dashed;background:transparent;border-color:var(--rojo)}
   .foco .nota{margin:4px 0 0;color:var(--mut);font-size:.92rem}
+  .foco.prot .nota{color:var(--rojo);font-weight:bold;font-size:.98rem}
   .privacidad{margin:0 0 18px;padding:8px 12px;border-left:3px solid var(--acc);background:var(--accbg);font-size:.88rem;color:var(--ink)}
   .privacidad a,footer a,.coment a{color:var(--acc)}
   .coment .chk{display:block;font-size:.85rem;color:var(--mut);margin-top:10px;line-height:1.5}
@@ -361,7 +365,7 @@ function listaFuentes(so){ return so && so.length ? '<ol>' + so.map(f => `<li>${
 function caja(id, rol, extra=''){
   if (id == null) return `<div class="caja vacio">${rol}: sin datos</div>`;
   const p = P(id);
-  if (p[0] === null) return `<div class="caja priv">${rol}: ${estado(p) === MENOR ? 'menor de edad · información oculta para su protección' : 'persona privada'}</div>`;
+  if (p[0] === null) return estado(p) === MENOR ? `<div class="caja priv menor">🔒 ${rol}: menor de edad · información oculta para su protección</div>` : `<div class="caja priv">${rol}: persona privada</div>`;
   if (estado(p) === PROTEGIDA)
     return `<div class="caja prot">${enlace(id, nombreCompleto(p))}<span class="etq">🔒 Datos protegidos (persona viva)${extra ? ' · ' + esc(extra) : ''}</span></div>`;
   const m = [resumen(p), extra].filter(Boolean).join(' · ');
@@ -632,13 +636,13 @@ function ejecutar(){
   if (!ids.length) ids = buscarFlexible(nom,a1,a2,document.getElementById('variantes').checked);
   registrar(ids.length ? 'búsqueda' : 'búsqueda sin resultados', [nom, a1, a2].map(x=>x.trim()).join(' | '), ids.length);
   if (!ids.length){
-    est.innerHTML='No se ha encontrado a nadie con esos datos. Prueba con menos datos (solo el primer apellido) o con otra grafía. Si sigues sin encontrarlo, <a href="#pista" class="a-pista">cuéntame lo que sabes de esa persona</a> para incluirla en futuras investigaciones.';
+    est.innerHTML='No se ha encontrado a nadie con esos datos. Prueba con menos datos (solo el primer apellido) o con otra grafía. Si sigues sin encontrarlo, <a href="#pista" class="a-pista">cuéntame lo que sabes de esa persona</a> para incluirla en futuras investigaciones.<br><span class="rojo">🔒 Por privacidad, los menores de edad no aparecen en el buscador. Si buscas a un niño, busca a sus padres: en su ficha verás a sus hijos menores, sin datos.</span>';
     lista.hidden=true; destacarPista([nom, a1, a2].map(x=>x.trim()).filter(Boolean).join(' ')); return;
   }
   if (ids.length === 1){ lista.hidden=true; irA(ids[0], true); est.textContent='1 resultado'; return; }
   const mostrar = ids.slice(0, MAX_RESULTADOS);
   est.textContent = ids.length > MAX_RESULTADOS ? `${ids.length} resultados; se muestran los ${MAX_RESULTADOS} primeros. Añade más datos para afinar.` : `${ids.length} resultados. Elige uno:`;
-  lista.innerHTML = mostrar.map(id => { const p=P(id); return `<li><button type="button" data-id="${id}"><span class="n">${esc(nombreCompleto(p))}</span><span class="m">${estado(p) === PROTEGIDA ? '🔒 datos protegidos (persona viva)' : (esc(resumen(p)) || 'sin fechas')}</span></button></li>`; }).join('');
+  lista.innerHTML = mostrar.map(id => { const p=P(id); return `<li><button type="button" data-id="${id}"><span class="n">${esc(nombreCompleto(p))}</span>${estado(p) === PROTEGIDA ? '<span class="m rojo">🔒 datos protegidos (persona viva)</span>' : '<span class="m">' + (esc(resumen(p)) || 'sin fechas') + '</span>'}</button></li>`; }).join('');
   lista.hidden = false;
 }
 
