@@ -74,16 +74,25 @@ def buscar(D, dia, mes):
     return "bau", sorted(bau)[:MAXIMO]
 
 
-def bloque(tipo, personas):
+MESES_LARGOS = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto",
+                "septiembre", "octubre", "noviembre", "diciembre"]
+
+
+def bloque(tipo, personas, dia, mes):
     e = html.escape
+    fecha = f"{dia} de {MESES_LARGOS[mes - 1]}"
     if personas:
-        cab = "🕯️ <strong>Hoy recordamos a</strong>" + ("" if tipo == "nac" else " (bautizados un día como hoy)") + ": "
-        items = " · ".join(
-            f'<a href="{BUSCADOR}#p{pid}">{e(nom)}</a> ({e(lug) + ", " if lug else ""}{a})'
-            for a, nom, lug, pid in personas)
+        verbo = "nacieron" if tipo == "nac" else "fueron bautizados"
+        cab = f"🕯️ <strong>Hoy, {fecha}, recordamos a los Berbel que {verbo} un día como hoy:</strong> "
+        def detalle(a, lug):
+            if tipo == "nac":
+                return f"nació en {e(lug)} en {a}" if lug else f"nació en {a}"
+            return f"bautizado/a en {e(lug)} en {a}" if lug else f"bautizado/a en {a}"
+        items = " · ".join(f'<a href="{BUSCADOR}#p{pid}">{e(nom)}</a> ({detalle(a, lug)})'
+                           for a, nom, lug, pid in personas)
         texto = cab + items + f' · <a href="{BUSCADOR}">Busca a tus antepasados →</a>'
     else:
-        texto = (f'🕯️ <strong>Hoy recordamos</strong> a todos los Berbel que nos precedieron · '
+        texto = (f'🕯️ <strong>Hoy, {fecha}, recordamos</strong> a todos los Berbel que nos precedieron · '
                  f'<a href="{BUSCADOR}">Busca a tus antepasados →</a>')
     return (
         '<!-- wp:group {"align":"full","className":"hoy-recordamos","style":{"color":{"background":"#0a4744","text":"#ffffff"},'
@@ -117,7 +126,7 @@ def main():
         print(f"{dia:02d}-{mes:02d} · {tipo} · {len(personas)} personas", file=sys.stderr)
         for p in personas:
             print("  ", p, file=sys.stderr)
-    print(bloque(tipo, personas))
+    print(bloque(tipo, personas, dia, mes))
 
 
 if __name__ == "__main__":
