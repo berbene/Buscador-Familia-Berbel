@@ -67,6 +67,9 @@
   .privacidad a,footer a,.coment a{color:var(--acc)}
   .coment .chk{display:block;font-size:.85rem;color:var(--mut);margin-top:10px;line-height:1.5}
   .coment .chk input{margin:0 6px 0 0;vertical-align:-2px}
+  .wa-contacto{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;background:#1f8f4e;color:#fff !important;font-weight:bold;text-decoration:none}
+  .wa-contacto:hover{filter:brightness(1.1)}
+  .wa-linea{margin:8px 0 4px}
   .compartir{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0 0;padding-top:10px;border-top:1px solid var(--line);font-size:.92rem}
   .compartir .lbl{color:var(--mut)}
   .compartir a,.compartir button{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:0;font:inherit;font-size:.9rem;font-weight:bold;text-decoration:none;cursor:pointer;color:#fff}
@@ -156,6 +159,7 @@
   <form id="pista" class="coment pista" autocomplete="on" hidden>
     <h3>¿No encuentras a tu familiar?</h3>
     <p class="m">Puede que todavía no esté en el árbol. Escribe todo lo que sepas sobre esa persona y sus antepasados —nombres y apellidos completos, fechas aproximadas y de dónde eran—. Cualquier pista ayuda: la tendré en cuenta en futuras investigaciones. El mensaje llega directamente al autor de familiaberbel.org y no se publica.</p>
+    <p class="m wa-linea">¿Prefieres WhatsApp? <a class="wa-contacto" href="https://wa.me/34684724240?text=Hola%20N%C3%A9stor%2C%20te%20escribo%20desde%20familiaberbel.org.%20No%20encuentro%20a%20mi%20familiar%20en%20el%20buscador%3A%20" target="_blank" rel="noopener">💬 Escríbeme por WhatsApp</a></p>
 
     <fieldset><legend>La persona que buscas</legend>
       <div class="tres">
@@ -488,6 +492,19 @@ document.addEventListener('click', e => {
   }
 });
 
+/* ===== WhatsApp de contacto ===== */
+const WHATSAPP = '34684724240';
+function enlaceWhatsApp(texto, rotulo){
+  return `<a class="wa-contacto" href="https://wa.me/${WHATSAPP}?text=${encodeURIComponent(texto)}" target="_blank" rel="noopener" data-canal="whatsapp-contacto">💬 ${rotulo}</a>`;
+}
+function whatsappFicha(id, p){
+  const año = t => ((t || '').match(/\d{4}/) || [''])[0];
+  const n = estado(p) === PROTEGIDA ? '' : año(p[3] || p[5]), d = estado(p) === PROTEGIDA ? '' : año(p[6]);
+  const fechas = n || d ? ` (${n || '?'}${d ? '–' + d : ''})` : '';
+  const txt = `Hola Néstor, te escribo desde familiaberbel.org sobre ${nombreCompleto(p)}${fechas}, ficha ${URL_BUSCADOR}#p${id}\n\n`;
+  return `<p class="m wa-linea">¿Prefieres WhatsApp? ${enlaceWhatsApp(txt, 'Escríbeme por WhatsApp')}</p>`;
+}
+
 /* ===== Comentarios ===== */
 function formularioComentario(id, p){
   const prot = estado(p) === PROTEGIDA;
@@ -499,6 +516,7 @@ function formularioComentario(id, p){
     <p class="m">📷 ¿Tienes una <b>foto antigua</b> (anterior a 1970) de ${esc(nombreCompleto(p))}? <a href="https://familiaberbel.org/comparte-tus-fotos/" target="_blank" rel="noopener">Compártela en el Álbum de la familia Berbel</a>.</p>`;
   return `<form class="coment" data-pid="${id}">
     ${cab}
+    ${whatsappFicha(id, p)}
     <div class="dos">
       <label>Tu nombre<input type="text" name="nombre" maxlength="100" required></label>
       <label>Tu correo (para poder responderte)<input type="email" name="email" maxlength="150" required></label>
