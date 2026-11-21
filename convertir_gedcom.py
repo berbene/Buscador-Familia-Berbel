@@ -106,8 +106,30 @@ def fecha_es(f):
     partes = f.split()
     return " ".join(MESES.get(p.upper(), p.lstrip("0") if p.isdigit() and len(p) <= 2 else p) for p in partes)
 
+# Topónimos que en el árbol aparecen a veces sin tilde (o con una de más). Se corrigen al
+# publicar, sin tocar el GEDCOM. Clave: palabra sin tildes y en minúsculas; valor: forma correcta.
+TILDES = {w.lower().translate(str.maketrans("áéíóúÁÉÍÓÚàèìòùÀÈÌÒÙ", "aeiouaeiouaeiouaeiou")): w for w in """
+    Íllora Huéneja Andalucía Almería Jaén Córdoba Málaga Cádiz León Aragón Láujar Orán Charchés
+    Bejarín Turón Montefrío Gádor Tíjola Lúcar Huércal Cúllar Vélez Úbeda Andújar Mojácar Níjar
+    Vícar Fondón Benínar Dalías Huécija Ugíjar Órgiva Guájar Lanjarón Pórtugos Bérchules Cádiar
+    Canjáyar Rágol Instinción Íllar Mondújar Almuñécar Salobreña Huéscar Castilléjar Zújar Benalúa
+    Huélago Moclín Píñar Güéjar Güevéjar Láchar Válor Júbar Alcútar Darrícal Jódar Bédmar Lubrín
+    Gérgal Senés Alcóntar Serón Purchena Fiñana Abrucena Dólar Guadix Diócesis Perú México Valparaíso
+    Paraná Algérie Abbès Perrégaux Lamoricière
+""".split()}
+TILDES.update({"parroquia": "Parroquia", "sagrario": "Sagrario", "argelia": "Argelia", "andalusia": "Andalucía",
+               "sao": "São", "illora": "Íllora", "hueneja": "Huéneja"})
+
+def _tilde(m):
+    w = m.group(0)
+    c = TILDES.get(w.lower().translate(str.maketrans("áéíóúÁÉÍÓÚàèìòùÀÈÌÒÙ", "aeiouaeiouaeiouaeiou")))
+    if not c or c == w:
+        return w
+    return c if (w[:1].isupper() or w.islower()) else w
+
 def lugar_limpio(p):
-    # "Huéneja, 304, Granada, Andalucia, España" -> "Huéneja, Granada, Andalucia, España"
+    # "Huéneja, 304, Granada, Andalucia, España" -> "Huéneja, Granada, Andalucía, España"
+    p = re.sub(r"[A-Za-zÀ-ÿ]+", _tilde, p or "")
     return ", ".join(x.strip() for x in p.split(",") if x.strip() and not x.strip().isdigit())
 
 def nombre(valor):
